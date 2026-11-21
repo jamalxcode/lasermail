@@ -9,7 +9,11 @@ a Mac. Nothing is tracked, nothing phones home, and your mail stays on your Mac.
 ## Download
 
 Get **LaserEmail-x.y.z.dmg** from [Releases](https://github.com/jamalxcode/lasermail/releases/latest) (universal:
-Apple silicon and Intel, macOS 14 Sonoma or later).
+Apple silicon and Intel, macOS 14 Sonoma or later), or always the newest from Terminal:
+
+```bash
+curl -LO https://github.com/jamalxcode/lasermail/releases/latest/download/LaserEmail.dmg
+```
 
 1. Open the disk image and drag **Laser Email** to **Applications**.
 2. The app isn't notarized by Apple yet, so the first time you open it macOS warns you. Click **Done**, then go to

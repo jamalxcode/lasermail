@@ -150,4 +150,5 @@ behaviour changes this file in the same commit. The reasoning behind the rules i
 |---|---|---|
 | R1 | A release is published when CI passes on `main` and the newest version in `CHANGELOG.md` has no release yet (or on a `v*` tag, or by hand). | `.github/workflows/release.yml` |
 | R2 | The disk image holds a universal (Apple silicon + Intel) app for macOS 14+, ad-hoc signed. It is published only after the app in it started and launched its bundled engine, and the engine stopped when the app quit. A SHA-256 checksum is published with it. | `release.yml` |
+| R2a | Each release also carries the image as `LaserEmail.dmg`, so `…/releases/latest/download/LaserEmail.dmg` is always the newest. Running the release workflow by hand for a released version rebuilds it and replaces its files. | `release.yml` |
 | R3 | Each disk image gets a GitHub build attestation; the release is published only after the app's own proof check accepts it, and the proof is published beside the image. After publishing, the updater helper is run against the live release and the app's checks must accept what it downloaded. | `release.yml` |

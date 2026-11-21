@@ -44,7 +44,9 @@ jobs:
           echo "version=$v" >> "$GITHUB_OUTPUT"
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           go=true
-          if gh release view "v$v" -R "${{ github.repository }}" >/dev/null 2>&1; then
+          # After CI: skip a version already released. By hand: build again and
+          # replace the release's files.
+          if [ "${{ github.event_name }}" = workflow_run ] && gh release view "v$v" -R "${{ github.repository }}" >/dev/null 2>&1; then
             echo "v$v is already released: nothing to do"; go=false
           fi
           echo "go=$go" >> "$GITHUB_OUTPUT"
@@ -81,6 +83,8 @@ jobs:
           mkdir -p out
           app/scripts/make-dmg.sh "$PWD/out/LaserEmail-$VERSION.dmg"
           (cd out && shasum -a 256 "LaserEmail-$VERSION.dmg" > "LaserEmail-$VERSION.dmg.sha256")
+          # The same image under a fixed name, so .../releases/latest/download/LaserEmail.dmg is always the newest.
+          cp "out/LaserEmail-$VERSION.dmg" out/LaserEmail.dmg
       - name: The app in the disk image starts and launches its engine
         env:
           VERSION: ${{ needs.decide.outputs.version }}
@@ -130,8 +134,9 @@ jobs:
           Universal build for Apple silicon and Intel Macs, macOS 14 Sonoma or later.
           NOTES
           sed -i '' "s/VERSION/$VERSION/" notes.md
-          gh release create "v$VERSION" "out/LaserEmail-$VERSION.dmg" "out/LaserEmail-$VERSION.dmg.sha256" "out/LaserEmail-$VERSION.dmg.sigstore.json" \
-            --target "${{ needs.decide.outputs.sha }}" --title "Laser Email $VERSION" --notes-file notes.md
+          files=("out/LaserEmail-$VERSION.dmg" "out/LaserEmail-$VERSION.dmg.sha256" "out/LaserEmail-$VERSION.dmg.sigstore.json" out/LaserEmail.dmg)
+          gh release create "v$VERSION" "${files[@]}" --target "${{ needs.decide.outputs.sha }}" --title "Laser Email $VERSION" --notes-file notes.md \
+            || gh release upload "v$VERSION" "${files[@]}" --clobber
       - name: Check for Updates finds and accepts this release (live, from GitHub)
         env:
           VERSION: ${{ needs.decide.outputs.version }}

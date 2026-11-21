@@ -36,6 +36,8 @@ final class AppModel {
         didSet { if oldValue != selectedMessageID { Task { await openSelected() } } }
     }
     var openMessage: MessageView?
+    /// The message the reader has finished drawing.
+    var renderedMessageID: Int64?
     var loadingMessage = false
     var searchText = "" {
         didSet { searchTask?.cancel(); searchTask = Task { try? await Task.sleep(nanoseconds: 250_000_000); await refreshList() } }
@@ -57,6 +59,7 @@ final class AppModel {
     // MARK: Startup
 
     func start() async {
+        BlockRules.warmUp()
         do {
             try await launcher.connect(client)
             let h = try await client.hello()

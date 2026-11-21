@@ -49,14 +49,9 @@ struct SidebarView: View {
             }
         }
         .listStyle(.sidebar)
-        .safeAreaInset(edge: .bottom) {
-            HStack {
-                Button { model.showAddAccount = true } label: { Image(systemName: "plus") }
-                    .buttonStyle(.borderless)
-                    .help("Add Account")
-                Spacer()
-            }
-            .padding(8)
+        .contextMenu {
+            Button("Add Account…") { model.showAddAccount = true }
+            Button("Get All New Mail") { Task { await model.getMail() } }
         }
     }
 }

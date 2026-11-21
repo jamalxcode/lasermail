@@ -21,7 +21,9 @@ enum SelfTest {
             }
         }
         func waitOpen(_ id: Int64) async {
-            for _ in 0..<50 where model.openMessage?.message.id != id { try? await Task.sleep(nanoseconds: 100_000_000) }
+            for _ in 0..<100 where model.openMessage?.message.id != id || model.renderedMessageID != id {
+                try? await Task.sleep(nanoseconds: 100_000_000)
+            }
         }
 
         try? await Task.sleep(nanoseconds: 800_000_000)
@@ -35,7 +37,7 @@ enum SelfTest {
         if let sale = model.messages.first(where: { $0.subject.hasPrefix("Your weekend") }) {
             model.selectedMessageID = sale.id
             await waitOpen(sale.id)
-            check("newsletter opened", model.openMessage?.message.id == sale.id)
+            check("newsletter opened and drawn", model.openMessage?.message.id == sale.id && model.renderedMessageID == sale.id)
             check("trackers blocked", model.openMessage?.privacy.trackers.count == 2)
             check("no tracking parameters", model.openMessage?.html.contains("utm_") == false)
             await shot("privacy")
@@ -49,7 +51,7 @@ enum SelfTest {
             check("attachment listed", model.openMessage?.files.first?.name == "Q4 Roadmap.pdf")
             await shot("message")
             model.pendingCompose = ComposeRequest(kind: .reply, messageID: m.id)
-            for _ in 0..<30 where NSApp.windows.filter({ $0.isVisible && $0.canBecomeMain }).count < 2 {
+            for _ in 0..<50 where !NSApp.windows.contains(where: { $0.isVisible && $0.title.hasPrefix("Re:") }) {
                 try? await Task.sleep(nanoseconds: 100_000_000)
             }
             let compose = NSApp.windows.first { $0.isVisible && $0.title.hasPrefix("Re:") }

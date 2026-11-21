@@ -406,3 +406,29 @@ func drain(ch <-chan Event) {
 		<-ch
 	}
 }
+
+func TestDemoParsesCleanly(t *testing.T) {
+	e, err := New(Config{DataDir: t.TempDir(), Secrets: secret.NewMemory(), Offline: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer e.Close()
+	if err := e.SeedDemo(time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	l, _ := e.List(store.Query{Role: store.Inbox})
+	for _, m := range l {
+		raw, err := e.Store().Body(m.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		p, err := msg.Parse(raw)
+		if err != nil || p.Subject != m.Subject {
+			t.Errorf("demo message %q parses as %q (%v)", m.Subject, p.Subject, err)
+		}
+	}
+	d, _, err := e.Reply(context.Background(), l[0].ID, false)
+	if err != nil || strings.Contains(d.Text, `"Priya`) || !strings.Contains(d.Text, "Priya Natarajan <priya@northwind.example> wrote:") {
+		t.Fatalf("reply header: %q %v", d.Text, err)
+	}
+}

@@ -2,6 +2,7 @@ package engine
 
 import (
 	"fmt"
+	"mime"
 	"strings"
 	"time"
 
@@ -115,23 +116,4 @@ func (e *Engine) SeedDemo(now time.Time) error {
 	return nil
 }
 
-func mimeWord(s string) string {
-	for _, r := range s {
-		if r > 127 {
-			return "=?UTF-8?Q?" + strings.NewReplacer("=", "=3D", "?", "=3F", "_", "=5F", " ", "_").Replace(qp(s)) + "?="
-		}
-	}
-	return s
-}
-
-func qp(s string) string {
-	var b strings.Builder
-	for _, c := range []byte(s) {
-		if c > 127 {
-			fmt.Fprintf(&b, "=%02X", c)
-		} else {
-			b.WriteByte(c)
-		}
-	}
-	return b.String()
-}
+func mimeWord(s string) string { return mime.QEncoding.Encode("utf-8", s) }

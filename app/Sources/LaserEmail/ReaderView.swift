@@ -25,7 +25,9 @@ struct ReaderView: View {
                         AttachmentStrip(files: v.files)
                     }
                     Divider()
-                    MailWebView(html: v.html, remoteImages: v.remoteImages, messageID: v.message.id, client: model.client)
+                    MailWebView(html: v.html, remoteImages: v.remoteImages, messageID: v.message.id, client: model.client) { id in
+                        model.renderedMessageID = id
+                    }
                 }
             } else if model.selectedMessageID != nil && model.loadingMessage {
                 ProgressView()
@@ -63,6 +65,14 @@ struct ReaderView: View {
         guard let id = model.selectedMessageID else { return }
         openWindow(id: "compose", value: ComposeRequest(kind: kind, messageID: id))
     }
+}
+
+/// "9:41 AM" today, "Yesterday 9:41 AM", else "Nov 3, 2026 9:41 AM".
+func headerDate(_ d: Date) -> String {
+    let time = d.formatted(date: .omitted, time: .shortened)
+    if Calendar.current.isDateInToday(d) { return time }
+    if Calendar.current.isDateInYesterday(d) { return "Yesterday " + time }
+    return d.formatted(date: .abbreviated, time: .omitted) + " " + time
 }
 
 struct Avatar: View {
@@ -106,14 +116,19 @@ struct HeaderView: View {
                         .lineLimit(2)
                 }
             }
-            Spacer()
+            .layoutPriority(1)
+            Spacer(minLength: 8)
             VStack(alignment: .trailing, spacing: 3) {
-                Text(m.date.formatted(date: .abbreviated, time: .shortened))
+                Text(headerDate(m.date))
                     .font(.system(size: 12))
                     .foregroundStyle(.secondary)
-                Text("\(view.mailbox) — \(view.account)")
+                    .lineLimit(1)
+                    .fixedSize()
+                Text(view.mailbox)
                     .font(.system(size: 11))
                     .foregroundStyle(.tertiary)
+                    .lineLimit(1)
+                    .help(view.account)
                 if m.flagged {
                     Image(systemName: "flag.fill").foregroundStyle(.orange)
                 }

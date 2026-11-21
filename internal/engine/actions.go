@@ -319,7 +319,7 @@ func (e *Engine) Forward(ctx context.Context, id int64) (*msg.Draft, int64, erro
 	d := &msg.Draft{Subject: msg.ForwardSubject(p.Subject)}
 	var from string
 	if len(p.From) > 0 {
-		from = p.From[0].String()
+		from = display(p.From[0])
 	}
 	d.Text = fmt.Sprintf("\n\nBegin forwarded message:\n\nFrom: %s\nSubject: %s\nDate: %s\n\n%s", from, p.Subject, p.Date.Format(time.RFC1123Z), p.PlainText())
 	for _, at := range p.Attachments {
@@ -330,10 +330,18 @@ func (e *Engine) Forward(ctx context.Context, id int64) (*msg.Draft, int64, erro
 	return d, v.AccountID, nil
 }
 
+// display is "Name <a@b>" without RFC 5322 quoting, for text people read.
+func display(a msg.Address) string {
+	if a.Name == "" {
+		return a.Email
+	}
+	return a.Name + " <" + a.Email + ">"
+}
+
 func quoteHeader(p *msg.Parsed) string {
 	who := "someone"
 	if len(p.From) > 0 {
-		who = p.From[0].String()
+		who = display(p.From[0])
 	}
 	return fmt.Sprintf("On %s, %s wrote:", p.Date.Local().Format("Jan 2, 2006, at 3:04 PM"), who)
 }

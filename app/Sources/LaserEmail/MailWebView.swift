@@ -13,6 +13,7 @@ struct MailWebView: NSViewRepresentable {
     let remoteImages: Bool
     let messageID: Int64
     let client: DaemonClient
+    var onRendered: (Int64) -> Void = { _ in }
 
     func makeCoordinator() -> Coordinator { Coordinator(client: client) }
 
@@ -35,11 +36,14 @@ struct MailWebView: NSViewRepresentable {
         guard context.coordinator.loadedKey != key else { return }
         context.coordinator.loadedKey = key
         context.coordinator.messageID = messageID
+        context.coordinator.onRendered = onRendered
         let html = html
         BlockRules.list(remote: remoteImages) { list in
+            guard context.coordinator.loadedKey == key else { return } // another message was picked meanwhile
             let ucc = wv.configuration.userContentController
             ucc.removeAllContentRuleLists()
-            if let list { ucc.add(list) } else { return } // never show mail without the rules
+            guard let list else { return } // never show mail without the rules
+            ucc.add(list)
             wv.loadHTMLString(html, baseURL: nil)
         }
     }
@@ -48,6 +52,7 @@ struct MailWebView: NSViewRepresentable {
         let client: DaemonClient
         var loadedKey = ""
         var messageID: Int64 = 0
+        var onRendered: (Int64) -> Void = { _ in }
         private var stopped = Set<ObjectIdentifier>()
         private let lock = NSLock()
 
@@ -62,6 +67,10 @@ struct MailWebView: NSViewRepresentable {
                 return decisionHandler(.allow) // in-page anchors
             }
             decisionHandler(.cancel)
+        }
+
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            onRendered(messageID)
         }
 
         func webView(_ webView: WKWebView, start task: WKURLSchemeTask) {
@@ -111,13 +120,26 @@ enum BlockRules {
 
     @MainActor private static var cache: [Bool: WKContentRuleList] = [:]
 
+    @MainActor private static var waiting: [Bool: [(WKContentRuleList?) -> Void]] = [:]
+
+    /// Compiles both lists early so the first message doesn't wait.
+    @MainActor static func warmUp() {
+        list(remote: false) { _ in }
+        list(remote: true) { _ in }
+    }
+
     @MainActor static func list(remote: Bool, _ done: @escaping (WKContentRuleList?) -> Void) {
         if let l = cache[remote] { return done(l) }
+        if waiting[remote] != nil { waiting[remote]!.append(done); return }
+        waiting[remote] = [done]
         WKContentRuleListStore.default().compileContentRuleList(forIdentifier: remote ? "laser-images" : "laser-block-all",
                                                                 encodedContentRuleList: remote ? imagesOnly : blockAll) { list, error in
-            if let error { NSLog("content rules: \(error)") }
-            if let list { cache[remote] = list }
-            done(list)
+            DispatchQueue.main.async {
+                if let error { NSLog("content rules: \(error)") }
+                if let list { cache[remote] = list }
+                let callbacks = waiting.removeValue(forKey: remote) ?? []
+                callbacks.forEach { $0(list) }
+            }
         }
     }
 }

@@ -44,6 +44,9 @@ struct MailCommands: Commands {
     @Environment(\.openWindow) private var openWindow
 
     var body: some Commands {
+        CommandGroup(after: .appSettings) {
+            Button("Add Account…") { model.showAddAccount = true }
+        }
         CommandGroup(replacing: .newItem) {
             Button("New Message") { openWindow(id: "compose", value: ComposeRequest(kind: .new)) }
                 .keyboardShortcut("n")

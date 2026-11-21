@@ -24,8 +24,8 @@ jobs:
       - run: go test -race ./...
       - name: Fuzz the parser and the privacy filter (short)
         run: |
-          go test ./internal/privacy -run X -fuzz FuzzSanitize -fuzztime 30s
-          go test ./internal/msg -run X -fuzz FuzzParse -fuzztime 30s
+          go test ./internal/privacy -run X -fuzz FuzzSanitize -fuzztime 500000x
+          go test ./internal/msg -run X -fuzz FuzzParse -fuzztime 500000x
 
   # One Mac job (macOS minutes are expensive): the Go engine on darwin, the
   # SwiftUI app built and tested, bundled, and driven by its self-test with

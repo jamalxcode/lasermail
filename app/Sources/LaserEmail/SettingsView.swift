@@ -210,7 +210,7 @@ struct AddAccountSheet: View {
             }
             Spacer()
             if working { ProgressView().controlSize(.small) }
-            Button("Back") { provider = nil; error = nil }.disabled(working)
+            Button("Back") { provider = nil; resetForm() }.disabled(working)
             if p == .gmail && model.oauthAvailable {
                 Button("Sign in with Google…") { Task { await add(p, oauth: true) } }
                     .disabled(working || email.isEmpty)
@@ -219,6 +219,19 @@ struct AddAccountSheet: View {
                 .keyboardShortcut(.defaultAction)
                 .disabled(working || email.isEmpty || password.isEmpty)
         }
+    }
+
+    /// Back to the provider list starts a clean form: nothing typed for one
+    /// provider carries over to another.
+    private func resetForm() {
+        name = NSFullUserName()
+        email = ""
+        password = ""
+        imapHost = ""
+        imapPort = "993"
+        smtpHost = ""
+        smtpPort = "465"
+        error = nil
     }
 
     private func help(_ p: Provider) -> String {

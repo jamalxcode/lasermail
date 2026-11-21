@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.3
+
+- Add Account: going Back to the provider list clears the form, so an iCloud entry no longer shows up when you
+  pick Gmail.
+- Gmail: when Google answers "Application-specific password required", the message now explains that an app
+  password (not the Google Account password) is needed and where to make one.
+
 ## 0.1.2
 
 - iCloud: fixed "Authentication Failed" with a correct app-specific password. Laser Email now signs in with the

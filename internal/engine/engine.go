@@ -341,6 +341,10 @@ func tryLogin(ctx context.Context, set provider.Settings, kind provider.Kind, em
 			"(Sign-In and Security → App-Specific Passwords) for the Apple Account this address belongs to, not your Apple Account password; "+
 			"changing your Apple Account password revokes old app-specific passwords. (%w)", email, last)
 	}
+	if kind == provider.Gmail && last != nil && strings.Contains(last.Error(), "Application-specific password required") {
+		return "", "", fmt.Errorf("Google wants an app password here, not your Google Account password. Make one at "+
+			"myaccount.google.com/apppasswords (2-Step Verification must be on) and paste its 16 letters. (%w)", last)
+	}
 	if kind == provider.Gmail {
 		return "", "", fmt.Errorf("Gmail refused the sign-in for %s. Use an app password from myaccount.google.com/apppasswords "+
 			"(2-Step Verification must be on), not your Google password. (%w)", email, last)

@@ -488,3 +488,32 @@ func TestICloudSignIn(t *testing.T) {
 		t.Fatalf("wrong password: %v", err)
 	}
 }
+
+// googleLike refuses every login the way Gmail does for a non-app password.
+type googleLike struct{ imapserver.Session }
+
+func (googleLike) Login(string, string) error {
+	return &imap.Error{Type: imap.StatusResponseTypeNo, Code: "ALERT",
+		Text: "Application-specific password required: https://support.google.com/accounts/answer/185833 (Failure)"}
+}
+
+func TestGmailAppPasswordMessage(t *testing.T) {
+	mem := imapmemserver.New()
+	is := imapserver.New(&imapserver.Options{
+		NewSession: func(*imapserver.Conn) (imapserver.Session, *imapserver.GreetingData, error) {
+			return googleLike{mem.NewSession()}, nil, nil
+		},
+		InsecureAuth: true,
+		Caps:         imap.CapSet{imap.CapIMAP4rev1: {}},
+	})
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	go is.Serve(ln)
+	defer is.Close()
+	_, _, err = tryLogin(context.Background(), provider.Settings{IMAP: hostPort(ln.Addr().String())}, provider.Gmail, "a@gmail.com", "my google password")
+	if !errors.Is(err, imapsync.ErrAuth) || !strings.Contains(err.Error(), "not your Google Account password") {
+		t.Fatalf("got %v", err)
+	}
+}

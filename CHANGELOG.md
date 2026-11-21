@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.5
+
+- A release for trying **Check for Updates…**: from 0.1.4, choose Laser Email ▸ Check for Updates…, then Install
+  and Relaunch. Laser Email ▸ About Laser Email then shows 0.1.5. Nothing else changed.
+
 ## 0.1.4
 
 - **Laser Email ▸ Check for Updates…** downloads the newest version from GitHub and, after you agree, installs it

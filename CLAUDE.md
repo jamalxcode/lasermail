@@ -84,8 +84,11 @@ app/scripts/bundle.sh && app/scripts/selftest.sh
 
 `.github/workflows/release.yml` runs after CI passes on `main`: if the newest `CHANGELOG.md` version has no GitHub
 release, it builds a universal app (`build-go.sh universal`, `ARCHS="--arch arm64 --arch x86_64" bundle.sh`),
-makes `LaserEmail-<v>.dmg`, checks that the app in the disk image launches its bundled engine and stops it on
-quit, and publishes the release with a SHA-256. The app is ad-hoc signed (no Developer ID yet), so users use
+makes `LaserEmail-<v>.dmg` (plus the same file as `LaserEmail.dmg` for the stable latest link), checks that the
+app in the disk image launches its bundled engine and stops it on quit, gets GitHub's build attestation and checks
+it with the app's own `ReleaseProof`, publishes the release (image, SHA-256, `.sigstore.json` proof), then runs the
+updater helper against the live release and checks that the app accepts the download. Running the workflow by
+hand for an existing version rebuilds it and replaces its files. The app is ad-hoc signed (no Developer ID yet), so users use
 "Open Anyway" once. Optional secrets `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` turn on Sign in with Google.
 
 ## Conventions

@@ -18,6 +18,9 @@ struct MainView: View {
             ReaderView()
         }
         .searchable(text: $model.searchText, placement: .toolbar, prompt: "Search")
+        .onChange(of: model.pendingCompose) { _, req in
+            if let req { openWindow(id: "compose", value: req); model.pendingCompose = nil }
+        }
         .sheet(isPresented: $model.showAddAccount) {
             AddAccountSheet()
         }

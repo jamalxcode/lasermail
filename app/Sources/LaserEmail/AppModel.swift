@@ -42,6 +42,8 @@ final class AppModel {
     }
     var unreadOnly = false { didSet { Task { await refreshList() } } }
     var showAddAccount = false
+    /// A compose window MainView should open (used by the self-test).
+    var pendingCompose: ComposeRequest?
     var alert: String?
 
     private var searchTask: Task<Void, Never>?

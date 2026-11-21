@@ -42,7 +42,9 @@ struct ReaderView: View {
                     .help("Move to Trash").disabled(none)
                 Button { Task { await model.perform("junk") } } label: { Label("Junk", systemImage: "xmark.bin") }
                     .help("Move to Junk").disabled(none)
-                Divider()
+            }
+            ToolbarItemGroup(placement: .primaryAction) {
+                let none = model.selectedMessageID == nil
                 Button { compose(.reply) } label: { Label("Reply", systemImage: "arrowshape.turn.up.left") }
                     .help("Reply").disabled(none)
                 Button { compose(.replyAll) } label: { Label("Reply All", systemImage: "arrowshape.turn.up.left.2") }

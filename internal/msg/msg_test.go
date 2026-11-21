@@ -86,7 +86,7 @@ func TestBuildPrivacy(t *testing.T) {
 
 func TestTextToHTML(t *testing.T) {
 	h := TextToHTML("see https://example.com/a.\n> q <b>\n>> qq\nend")
-	for _, want := range []string{`<a href="https://example.com/a">`, `<blockquote type="cite">q &lt;b&gt;`, "qq", "</blockquote></blockquote>end"} {
+	for _, want := range []string{`<a href="https://example.com/a">`, `<blockquote type="cite">q &lt;b&gt;`, "qq", "</blockquote></blockquote>end<br>"} {
 		if !strings.Contains(h, want) {
 			t.Errorf("missing %q in %s", want, h)
 		}

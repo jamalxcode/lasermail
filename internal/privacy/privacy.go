@@ -96,12 +96,21 @@ func CSP(remoteImages bool) string {
 	return "default-src 'none'; img-src " + img + "; style-src 'unsafe-inline'; font-src data:; form-action 'none'; base-uri 'none'"
 }
 
+// baseCSS gives every message Mail's reading defaults; the message's own
+// styles come later in the document and override them.
+const baseCSS = `html{-webkit-text-size-adjust:none}` +
+	`body{margin:18px 22px;font:14px/1.45 -apple-system,"Helvetica Neue",sans-serif;color:#1d1d1f;word-wrap:break-word;overflow-wrap:anywhere}` +
+	`img{max-width:100%;height:auto}img[data-blocked-src]{background:#f2f2f7;outline:1px dashed #c7c7cc;min-height:24px;min-width:24px}` +
+	`blockquote[type=cite]{margin:4px 0 4px 2px;padding-left:10px;border-left:2px solid #1a73e8;color:#1a5fb4}` +
+	`blockquote[type=cite] blockquote[type=cite]{border-left-color:#34a853;color:#2b7a3d}` +
+	`a{color:#0a64d6}pre,code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px}`
+
 // Wrap puts a sanitized body in a document with the CSP and a referrer policy.
 func Wrap(body string, remoteImages bool) string {
 	return `<!doctype html><html><head><meta charset="utf-8">` +
 		`<meta http-equiv="Content-Security-Policy" content="` + CSP(remoteImages) + `">` +
 		`<meta name="referrer" content="no-referrer">` +
-		`<meta name="color-scheme" content="light dark"></head><body>` + body + `</body></html>`
+		`<style>` + baseCSS + `</style></head><body>` + body + `</body></html>`
 }
 
 type sanitizer struct {

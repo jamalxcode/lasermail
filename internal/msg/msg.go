@@ -255,12 +255,12 @@ func TextToHTML(text string) string {
 			return `<a href="` + u + `">` + u + `</a>`
 		})
 		b.WriteString(esc)
-		b.WriteString("<br>\n")
+		b.WriteString("<br>")
 	}
 	for ; depth > 0; depth-- {
 		b.WriteString("</blockquote>")
 	}
-	return `<div style="white-space:pre-wrap;font-family:-apple-system,sans-serif">` + b.String() + `</div>`
+	return `<div class="laser-plain" style="white-space:pre-wrap">` + b.String() + `</div>`
 }
 
 // PlainText is the readable text of a message (for search and previews).

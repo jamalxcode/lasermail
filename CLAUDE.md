@@ -63,7 +63,8 @@ app/scripts/bundle.sh && app/scripts/selftest.sh
   fake SMTP server: unified inbox, search, privacy, flags both ways, IDLE push, archive/trash/delete, send with
   and without a Sent copy, reply/forward, attachments, account removal, restart.
 - Swift compiles only on macOS: the CI `app` job builds, tests (against a real `laserd --demo`), bundles, and runs
-  `SelfTest.swift`, printing screenshots as base64 JPEG between `=== SCREENSHOT name` lines. Decode them to look
+  `SelfTest.swift`, printing screenshots as base64 JPEG between `=== SCREENSHOT name` lines. Decode them with
+  `app/scripts/decode-screenshots.py` (log from `gh api repos/jamalxcode/laser-email/actions/jobs/<id>/logs`) to look
   at the UI; extend the self-test for visible changes.
 - Run gofmt, vet and the full suite before committing.
 

@@ -57,6 +57,9 @@ struct MailCommands: Commands {
     @Environment(\.openWindow) private var openWindow
 
     var body: some Commands {
+        CommandGroup(after: .appInfo) {
+            Button("Check for Updates…") { Task { await UpdateController.shared.check(model) } }
+        }
         CommandGroup(after: .appSettings) {
             Button("Add Account…") { model.showAddAccount = true }
         }

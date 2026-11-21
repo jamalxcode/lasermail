@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -135,13 +136,26 @@ func TestDependenciesDontSpeakHTTP(t *testing.T) {
 }
 
 // The app shell has no network code: it talks to laserd over the socket,
-// and its web view blocks every load.
+// and its web view blocks every load. The one exception is the updater
+// helper (its own executable, run only on Check for Updates…), which may talk
+// to GitHub and nothing else.
 func TestAppHasNoNetworkCode(t *testing.T) {
 	r := root(t)
 	var swift int
 	sawRules := false
+	updater := filepath.Join(r, "app", "Sources", "LaserEmailUpdater") + string(filepath.Separator)
 	filepath.WalkDir(filepath.Join(r, "app"), func(p string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() || !strings.HasSuffix(p, ".swift") {
+			return nil
+		}
+		if strings.HasPrefix(p, updater) {
+			b, _ := os.ReadFile(p)
+			for _, m := range regexp.MustCompile(`https://[^"/\\ ]+`).FindAllString(string(b), -1) {
+				host := strings.TrimPrefix(m, "https://")
+				if host != "github.com" && host != "objects.githubusercontent.com" && host != "release-assets.githubusercontent.com" {
+					t.Errorf("%s names %s; the updater may reach GitHub only", p, m)
+				}
+			}
 			return nil
 		}
 		swift++

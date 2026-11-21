@@ -117,8 +117,8 @@ behaviour changes this file in the same commit. The reasoning behind the rules i
 | # | Rule | Where |
 |---|---|---|
 | D1 | Data lives in `~/Library/Application Support/Laser Email` (0700); the database and socket are 0600. | `store.Open`, `ipc.Listen`, `cmd/laserd` |
-| D2 | The only network traffic is to the user's IMAP/SMTP servers and, for Sign in with Google, Google's OAuth endpoints. No analytics, crash reports, update checks, avatars or link previews. | `internal/netcheck` |
-| D3 | Only `internal/imapsync`, `internal/send` and `internal/oauth` may use network packages; `internal/ipc` uses Unix sockets only; no dependency may speak HTTP; the Swift app may not use URLSession/Network and must install WebKit block rules. The build fails otherwise. | `internal/netcheck` |
+| D2 | The only network traffic is to the user's IMAP/SMTP servers, for Sign in with Google Google's OAuth endpoints, and, when the user chooses Check for Updates…, GitHub. No analytics, crash reports, automatic update checks, avatars or link previews. | `internal/netcheck` |
+| D3 | Only `internal/imapsync`, `internal/send` and `internal/oauth` may use network packages; `internal/ipc` uses Unix sockets only; no dependency may speak HTTP; the Swift app may not use URLSession/Network (except the updater helper, which may name GitHub hosts only) and must install WebKit block rules. The build fails otherwise. | `internal/netcheck` |
 | D4 | Passwords go to the Keychain through `/usr/bin/security -i` with the value on standard input, never on the command line. | `secret.Keychain` |
 
 ## 10. The app and the engine
@@ -132,9 +132,22 @@ behaviour changes this file in the same commit. The reasoning behind the rules i
 | E5 | With no accounts, the Add Account sheet opens on launch. | `AppModel.start` |
 | E6 | `laserd --demo` (and `LASER_DEMO=1` for the app) shows two made-up accounts with sample mail, offline. | `engine.SeedDemo` |
 
-## 11. Releases
+## 11. Updates
+
+| # | Rule | Where |
+|---|---|---|
+| U1 | **Laser Email ▸ Check for Updates…** checks for a new version. There is no background or scheduled check. | `UpdateController`, `MailCommands` |
+| U2 | The check is done by the bundled **Laser Email Updater** helper, the only Swift code with network access. It reaches only `github.com` and GitHub's release-download hosts, over HTTPS, with no cookies or cache, sends no credentials or Mac details, and refuses redirects elsewhere. | `LaserEmailUpdater/main.swift`, `internal/netcheck` |
+| U3 | The newest version is read from where `github.com/jamalxcode/lasermail/releases/latest` redirects; if it is newer than the running app, `LaserEmail-<v>.dmg` and its proof `LaserEmail-<v>.dmg.sigstore.json` are downloaded (afresh each time) to `~/Library/Application Support/Laser Email/Updates`. | `LaserEmailUpdater` |
+| U4 | **Nothing is installed without proof** that this repository's release workflow built the disk image (a GitHub build attestation, checked offline against Sigstore's root). Then: it holds an app with Laser Email's bundle id, with `laserd`, and a newer version. Releases before 0.1.4 have no proof and can't be installed this way. | `ReleaseProof`, `Updater.prepare` |
+| U5 | The user sees the new version and what's new and chooses **Install and Relaunch** or **Later**. | `UpdateController` |
+| U6 | Installing copies the new app beside the current one, moves the current one to `~/Library/Application Support/Laser Email Previous Version`, puts the new one in its place (restoring the old one on any failure), quits (stopping the engine it started) and relaunches. Mail, accounts and Keychain items are untouched. | `Updater.install` |
+| U7 | An app that macOS runs from a temporary copy (not moved to Applications) is asked to be moved first. | `UpdateError.translocated` |
+
+## 12. Releases
 
 | # | Rule | Where |
 |---|---|---|
 | R1 | A release is published when CI passes on `main` and the newest version in `CHANGELOG.md` has no release yet (or on a `v*` tag, or by hand). | `.github/workflows/release.yml` |
 | R2 | The disk image holds a universal (Apple silicon + Intel) app for macOS 14+, ad-hoc signed. It is published only after the app in it started and launched its bundled engine, and the engine stopped when the app quit. A SHA-256 checksum is published with it. | `release.yml` |
+| R3 | Each disk image gets a GitHub build attestation; the release is published only after the app's own proof check accepts it, and the proof is published beside the image. After publishing, the updater helper is run against the live release and the app's checks must accept what it downloaded. | `release.yml` |

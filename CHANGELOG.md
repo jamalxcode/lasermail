@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.4
+
+- **Laser Email ▸ Check for Updates…** downloads the newest version from GitHub and, after you agree, installs it
+  and relaunches. Each update is checked first: it must carry GitHub's proof that Laser Email's own release
+  workflow built it. The previous version is kept in ~/Library/Application Support/Laser Email Previous Version.
+- Updates are checked only when you choose the command, never in the background.
+
 ## 0.1.3
 
 - Add Account: going Back to the provider list clears the form, so an iCloud entry no longer shows up when you

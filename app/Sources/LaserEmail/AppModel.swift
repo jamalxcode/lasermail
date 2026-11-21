@@ -44,6 +44,8 @@ final class AppModel {
     }
     var unreadOnly = false { didSet { Task { await refreshList() } } }
     var showAddAccount = false
+    /// "Checking for updates…" and the like, shown at the bottom of the window.
+    var updateProgress: String?
     /// A compose window MainView should open (used by the self-test).
     var pendingCompose: ComposeRequest?
     var alert: String?

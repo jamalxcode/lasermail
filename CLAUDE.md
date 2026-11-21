@@ -27,6 +27,10 @@ shell in the style of a native macOS mail app talks to it over a Unix socket.
 2. **Network only where it must be.** Only `internal/imapsync` (IMAP), `internal/send` (SMTP) and `internal/oauth`
    (Google sign-in) talk to the network; `internal/ipc` uses Unix sockets only. `internal/netcheck` fails the
    build otherwise, and also if a dependency speaks HTTP or the Swift app uses URLSession/Network. No telemetry.
+   **The one Swift exception** (owner's request, modelled on laserdot-go): the bundled `Laser Email Updater` helper
+   (`app/Sources/LaserEmailUpdater`) may reach GitHub only, and only when the user chooses Check for Updates….
+   The app installs an update only after `ReleaseProof` (ported from laserdot-go) accepts GitHub's build
+   attestation for it. Don't widen the exception without the owner.
 3. **Secrets in the Keychain.** Passwords and OAuth tokens go through `internal/secret` (macOS Keychain via
    `/usr/bin/security -i`, values on stdin, never argv). The database never holds a secret.
 4. **Local data stays local** in `~/Library/Application Support/Laser Email` (0700; db 0600).
@@ -49,7 +53,8 @@ internal/daemon    protocol ops → engine
 internal/netcheck  the network-boundary tests
 cmd/laserd         the engine daemon (--demo for offline sample data)
 cmd/laser          CLI client
-app/               SwiftUI app (SwiftPM): LaserKit = socket client + wire types; LaserEmail = the UI
+app/               SwiftUI app (SwiftPM): LaserKit = socket client, wire types, Updater + ReleaseProof (offline);
+                   LaserEmail = the UI; LaserEmailUpdater = the update helper (GitHub only)
 app/scripts        build-go.sh, bundle.sh, make-dmg.sh, selftest.sh (screenshots into the CI log)
 ```
 

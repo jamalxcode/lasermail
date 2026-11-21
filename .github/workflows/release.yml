@@ -53,7 +53,13 @@ jobs:
     needs: decide
     if: needs.decide.outputs.go == 'true'
     runs-on: macos-latest
-    timeout-minutes: 40
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      # GitHub's keyless proof that this workflow built the disk image; the
+      # app installs no update without it (ReleaseProof).
+      id-token: write
+      attestations: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -92,6 +98,20 @@ jobs:
           "$d/Laser Email.app/Contents/MacOS/laserd" --version
           kill $pid; sleep 2
           pgrep -f "$d/Laser Email.app/Contents/MacOS/laserd" && { echo "::error::the engine kept running after the app quit"; exit 1; } || true
+      - name: GitHub vouches for the disk image (keyless build proof)
+        id: attest
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: out/LaserEmail-${{ needs.decide.outputs.version }}.dmg
+      - name: Laser Email accepts the proof (else nothing is published)
+        env:
+          LASER_PROOF_FILE: ${{ github.workspace }}/out/LaserEmail-${{ needs.decide.outputs.version }}.dmg
+          LASER_PROOF_BUNDLE: ${{ steps.attest.outputs.bundle-path }}
+          LASER_PROOF_WORKFLOW: .github/workflows/release.yml
+        run: |
+          cp "$LASER_PROOF_BUNDLE" "out/LaserEmail-${{ needs.decide.outputs.version }}.dmg.sigstore.json"
+          (cd app && swift test --filter ReleaseProofTests) 2>&1 | tee proof.log
+          if grep -qE "[1-9][0-9]* tests? skipped" proof.log; then echo "::error::the proof was not checked"; exit 1; fi
       - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
@@ -110,5 +130,22 @@ jobs:
           Universal build for Apple silicon and Intel Macs, macOS 14 Sonoma or later.
           NOTES
           sed -i '' "s/VERSION/$VERSION/" notes.md
-          gh release create "v$VERSION" "out/LaserEmail-$VERSION.dmg" "out/LaserEmail-$VERSION.dmg.sha256" \
+          gh release create "v$VERSION" "out/LaserEmail-$VERSION.dmg" "out/LaserEmail-$VERSION.dmg.sha256" "out/LaserEmail-$VERSION.dmg.sigstore.json" \
             --target "${{ needs.decide.outputs.sha }}" --title "Laser Email $VERSION" --notes-file notes.md
+      - name: Check for Updates finds and accepts this release (live, from GitHub)
+        env:
+          VERSION: ${{ needs.decide.outputs.version }}
+        run: |
+          d=$(mktemp -d /tmp/upd.XXXX)
+          mkdir -p "$d/old/Laser Email.app/Contents"
+          /usr/libexec/PlistBuddy -c "Add :CFBundleShortVersionString string 0.0.1" "$d/old/Laser Email.app/Contents/Info.plist"
+          helper="app/build/Laser Email.app/Contents/Helpers/Laser Email Updater.app/Contents/MacOS/LaserEmailUpdater"
+          for i in 1 2 3 4 5 6; do
+            "$helper" --app "$d/old/Laser Email.app" --status "$d/status/update.json" && break
+            sleep $((i * 10)) # the release can take a moment to appear as "latest"
+          done
+          cat "$d/status/update.json"; echo
+          grep -q "\"latest\":\"$VERSION\"" "$d/status/update.json" || { echo "::error::the updater did not find $VERSION"; exit 1; }
+          export LASER_UPDATE_LIVE_DMG="$d/status/LaserEmail-$VERSION.dmg"
+          (cd app && swift test --filter testThePublishedReleaseIsAccepted) 2>&1 | tee live.log
+          if grep -qE "[1-9][0-9]* tests? skipped" live.log; then echo "::error::the live update was not checked"; exit 1; fi

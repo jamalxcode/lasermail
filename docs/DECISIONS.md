@@ -106,8 +106,14 @@ Read as four requirements: native-feeling Mac app, Go, many Gmail + iCloud accou
 - **Signing:** ad-hoc only. Developer ID signing and notarization need a paid Apple Developer account; until then
   users open it once via System Settings → Privacy & Security → Open Anyway. Notarization is the next step for a
   smooth install.
-- **No auto-updater yet:** an updater would be the one networked part of the app; it is left out until there is a
-  signed release channel to check against (laserdot-go's updater, with build attestations, is the model).
+- **Updates (0.1.4):** Laser Email ▸ Check for Updates…, built like laserdot-go's updater. A separate helper app
+  is the only networked Swift code (GitHub only), so the app itself keeps no network code. Without a Developer ID
+  there is no Apple signature to check, so trust comes from GitHub build attestations: the release workflow gets a
+  keyless Sigstore certificate naming this repo's workflow, and the app checks it offline (`ReleaseProof`, ported
+  as-is from laserdot-go) before unpacking. Checks happen only on request (no daily ping: less traffic, nothing
+  for GitHub to log unless the user asks). The previous version is kept for recovery. laserdot-go's local
+  re-signing (to keep macOS permissions across updates) isn't needed: Laser Email holds no TCC permissions, and its
+  Keychain items belong to `/usr/bin/security`, not to the app's signature.
 
 ## 10. Repository
 

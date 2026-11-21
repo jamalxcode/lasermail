@@ -15,7 +15,8 @@ Apple silicon and Intel, macOS 14 Sonoma or later).
 2. The app isn't notarized by Apple yet, so the first time you open it macOS warns you. Click **Done**, then go to
    **System Settings → Privacy & Security** and click **Open Anyway**. (Or in Terminal:
    `xattr -dr com.apple.quarantine "/Applications/Laser Email.app"`.)
-3. Add your accounts (below). To look around with sample mail first, run
+3. Later versions: **Laser Email ▸ Check for Updates…** downloads, checks and installs them (from 0.1.4 on).
+4. Add your accounts (below). To look around with sample mail first, run
    `LASER_DEMO=1 LASER_DATA=/tmp/laser-demo "/Applications/Laser Email.app/Contents/MacOS/LaserEmail"` in Terminal.
 
 ## What it does
@@ -30,6 +31,8 @@ Apple silicon and Intel, macOS 14 Sonoma or later).
   viewer has JavaScript off, keeps no cookies or cache, and blocks every web request at the WebKit level.
 - 🕵️ **Sends quietly.** Outgoing mail has no app name, no time zone (UTC date), no computer name, and a random
   Message-ID. Read receipts are never sent. Bcc never appears in headers.
+- 🔄 **Updates when you ask.** Check for Updates… fetches the newest release from GitHub and installs it only
+  after verifying GitHub's proof that Laser Email's own release workflow built it. No background checks.
 - 🔑 **Passwords in your Keychain.** App passwords (or Google sign-in tokens) are kept in the macOS Keychain and
   never written to disk anywhere else.
 - ⌨️ **Mail's shortcuts.** ⌘N new message, ⌘R reply, ⇧⌘R reply all, ⇧⌘F forward, ⌃⌘A archive, ⌘⌫ trash, ⇧⌘L

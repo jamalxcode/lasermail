@@ -30,7 +30,12 @@ struct MainView: View {
             Text(model.alert ?? "")
         }
         .overlay(alignment: .bottom) {
-            if let err = model.connectionError {
+            if let p = model.updateProgress {
+                HStack(spacing: 8) { ProgressView().controlSize(.small); Text(p) }
+                    .padding(8)
+                    .background(.regularMaterial, in: Capsule())
+                    .padding()
+            } else if let err = model.connectionError {
                 Label(err, systemImage: "exclamationmark.triangle")
                     .padding(8)
                     .background(.regularMaterial, in: Capsule())

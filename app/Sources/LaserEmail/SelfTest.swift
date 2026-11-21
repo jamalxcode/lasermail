@@ -33,6 +33,9 @@ enum SelfTest {
         check("two accounts", model.accounts.count == 2)
         check("unified inbox lists both accounts", Set(model.messages.map(\.accountId)).count == 2)
         check("unread badge", (model.counts["inbox"] ?? 0) == 4)
+        check("updater bundled", FileManager.default.isExecutableFile(atPath: UpdateController.helper.path))
+        let appMenu = NSApp.mainMenu?.items.first?.submenu
+        check("Check for Updates in the app menu", appMenu?.items.contains { $0.title == "Check for Updates…" } == true)
 
         if let sale = model.messages.first(where: { $0.subject.hasPrefix("Your weekend") }) {
             model.selectedMessageID = sale.id

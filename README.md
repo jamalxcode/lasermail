@@ -4,6 +4,18 @@
 other IMAP mail) and read them in one unified inbox, in a native three-column app that looks and feels at home on
 a Mac. Nothing is tracked, nothing phones home, and your mail stays on your Mac.
 
+## Download
+
+Get **LaserEmail-x.y.z.dmg** from [Releases](https://github.com/jamalxcode/lasermail/releases/latest) (universal:
+Apple silicon and Intel, macOS 14 Sonoma or later).
+
+1. Open the disk image and drag **Laser Email** to **Applications**.
+2. The app isn't notarized by Apple yet, so the first time you open it macOS warns you. Click **Done**, then go to
+   **System Settings → Privacy & Security** and click **Open Anyway**. (Or in Terminal:
+   `xattr -dr com.apple.quarantine "/Applications/Laser Email.app"`.)
+3. Add your accounts (below). To look around with sample mail first, run
+   `LASER_DEMO=1 LASER_DATA=/tmp/laser-demo "/Applications/Laser Email.app/Contents/MacOS/LaserEmail"` in Terminal.
+
 ## What it does
 
 - 📥 **Every account, one inbox.** All Inboxes, Flagged, Drafts and Sent across accounts, plus each account's own
@@ -34,7 +46,16 @@ a Mac. Nothing is tracked, nothing phones home, and your mail stays on your Mac.
 A pure-Go engine (`laserd`) does the work: accounts, IMAP sync, the local database, the privacy filter and
 sending. The SwiftUI app is a thin window onto it over a private Unix socket. Only three parts of the code can touch
 the network (IMAP, SMTP, Google sign-in), and a test fails the build if network code appears anywhere else,
-including in the app. See `CLAUDE.md` for the layout and `docs/privacy.md` for the privacy model.
+including in the app.
+
+- `docs/BUSINESS-RULES.md`: every rule the app follows (accounts, sync, search, privacy, sending), with where it
+  lives in the code.
+- `docs/DECISIONS.md`: why it is built this way, what else was considered.
+- `docs/privacy.md`: the privacy model. `docs/gmail-oauth.md`: enabling Sign in with Google.
+- `CLAUDE.md`: the code layout and commands.
+
+Releases publish themselves: add a `## x.y.z` section to `CHANGELOG.md` and merge to `main`; when CI passes, the
+release workflow builds, checks and publishes `LaserEmail-x.y.z.dmg`.
 
 ```bash
 go test -race ./...                                   # engine, on any OS

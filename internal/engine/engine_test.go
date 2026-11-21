@@ -432,3 +432,17 @@ func TestDemoParsesCleanly(t *testing.T) {
 		t.Fatalf("reply header: %q %v", d.Text, err)
 	}
 }
+
+func TestFirstSyncIsNotNewMail(t *testing.T) {
+	f := setup(t)
+	events, stop := f.e.Subscribe()
+	defer stop()
+	f.add(t, "me@gmail.test", "gpw", true)
+	waitFor(t, "first sync", func() bool { return len(f.list(store.Query{Role: store.Inbox})) == 3 })
+	time.Sleep(200 * time.Millisecond)
+	for len(events) > 0 {
+		if ev := <-events; ev.Type == "new_mail" {
+			t.Fatalf("first sync announced new mail: %+v", ev)
+		}
+	}
+}

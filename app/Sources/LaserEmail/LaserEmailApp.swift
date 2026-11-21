@@ -30,9 +30,22 @@ struct LaserEmailApp: App {
 }
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    private var sigterm: DispatchSourceSignal?
+
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // `kill` (SIGTERM) quits like ⌘Q, so the engine stops with the app.
+        signal(SIGTERM, SIG_IGN)
+        let src = DispatchSource.makeSignalSource(signal: SIGTERM, queue: .main)
+        src.setEventHandler { NSApp.terminate(nil) }
+        src.resume()
+        sigterm = src
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
+    }
+
+    /// The engine this app started stops with it (one it found running is left alone).
+    func applicationWillTerminate(_ notification: Notification) {
+        DaemonLauncher.current?.stop()
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }

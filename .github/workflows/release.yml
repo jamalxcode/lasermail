@@ -1,0 +1,114 @@
+name: Release
+# Publishes itself: when CI passes on main and CHANGELOG.md's newest version
+# has no release yet, this builds a universal Laser Email.app from exactly
+# that commit, packs LaserEmail-<version>.dmg, checks that the app in the
+# disk image starts and launches its bundled engine, and publishes it as a
+# GitHub release. A v* tag or a run by hand with a version also work.
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+    branches: [main]
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version, e.g. 0.1.0 (default: newest in CHANGELOG.md)'
+        required: false
+permissions:
+  contents: write
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  decide:
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      sha: ${{ steps.v.outputs.sha }}
+      go: ${{ steps.v.outputs.go }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - id: v
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          v="${{ github.event.inputs.version }}"
+          if [ "${{ github.event_name }}" = push ]; then v="${GITHUB_REF_NAME#v}"; fi
+          if [ -z "$v" ]; then v=$(awk '/^## [0-9]+\.[0-9]+\.[0-9]+/ {print $2; exit}' CHANGELOG.md); fi
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          go=true
+          if gh release view "v$v" -R "${{ github.repository }}" >/dev/null 2>&1; then
+            echo "v$v is already released: nothing to do"; go=false
+          fi
+          echo "go=$go" >> "$GITHUB_OUTPUT"
+
+  release:
+    needs: decide
+    if: needs.decide.outputs.go == 'true'
+    runs-on: macos-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.decide.outputs.sha }}
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Build (universal: Apple silicon + Intel)
+        env:
+          VERSION: ${{ needs.decide.outputs.version }}
+          BUILD: ${{ github.run_number }}
+          ARCHS: --arch arm64 --arch x86_64
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+        run: |
+          app/scripts/build-go.sh universal
+          app/scripts/bundle.sh
+          lipo -info "app/build/Laser Email.app/Contents/MacOS/LaserEmail" "app/build/Laser Email.app/Contents/MacOS/laserd"
+          mkdir -p out
+          app/scripts/make-dmg.sh "$PWD/out/LaserEmail-$VERSION.dmg"
+          (cd out && shasum -a 256 "LaserEmail-$VERSION.dmg" > "LaserEmail-$VERSION.dmg.sha256")
+      - name: The app in the disk image starts and launches its engine
+        env:
+          VERSION: ${{ needs.decide.outputs.version }}
+        run: |
+          d=$(mktemp -d /tmp/lsr.XXXX)
+          for i in 1 2 3 4 5 6; do hdiutil attach -nobrowse -readonly -mountpoint "$d/mnt" "out/LaserEmail-$VERSION.dmg" && break; sleep $((i*4)); done
+          ditto "$d/mnt/Laser Email.app" "$d/Laser Email.app"
+          hdiutil detach "$d/mnt" || hdiutil detach -force "$d/mnt" || true
+          LASER_DEMO=1 LASER_DATA="$d/data" "$d/Laser Email.app/Contents/MacOS/LaserEmail" > "$d/app.log" 2>&1 &
+          pid=$!
+          for i in $(seq 1 100); do [ -S "$d/data/laserd.sock" ] && break; sleep 0.2; done
+          sleep 3
+          kill -0 $pid || { cat "$d/app.log"; echo "::error::the app exited at launch"; exit 1; }
+          [ -S "$d/data/laserd.sock" ] || { cat "$d/app.log" "$d/data/laserd.log" 2>/dev/null; echo "::error::the bundled engine did not start"; exit 1; }
+          "$d/Laser Email.app/Contents/MacOS/laserd" --version
+          kill $pid; sleep 2
+          pgrep -f "$d/Laser Email.app/Contents/MacOS/laserd" && { echo "::error::the engine kept running after the app quit"; exit 1; } || true
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.decide.outputs.version }}
+        run: |
+          awk -v v="$VERSION" '$0 ~ "^## "v"$" {on=1; next} /^## / {on=0} on' CHANGELOG.md > notes.md
+          cat >> notes.md <<'NOTES'
+
+          ### Install
+          1. Download **LaserEmail-VERSION.dmg** below, open it and drag **Laser Email** to **Applications**.
+          2. The app isn't notarized by Apple yet, so the first time: open it, click **Done** on the warning, then
+             go to **System Settings → Privacy & Security** and click **Open Anyway**. (Or run
+             `xattr -dr com.apple.quarantine "/Applications/Laser Email.app"` in Terminal.)
+          3. Add your accounts: Gmail needs an app password, iCloud an app-specific password (the app links to both).
+
+          Universal build for Apple silicon and Intel Macs, macOS 14 Sonoma or later.
+          NOTES
+          sed -i '' "s/VERSION/$VERSION/" notes.md
+          gh release create "v$VERSION" "out/LaserEmail-$VERSION.dmg" "out/LaserEmail-$VERSION.dmg.sha256" \
+            --target "${{ needs.decide.outputs.sha }}" --title "Laser Email $VERSION" --notes-file notes.md

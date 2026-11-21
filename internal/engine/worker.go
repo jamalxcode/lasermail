@@ -192,12 +192,13 @@ func (w *worker) syncBox(c *imapsync.Conn, mb *store.Mailbox) error {
 		o.Window = min(o.Window, 500)
 		o.Prefetch = min(o.Prefetch, 30)
 	}
+	initial := mb.LastUID == 0 // a first download is not "new mail"
 	res, err := c.SyncMailbox(w.e.st, mb, o)
 	if err != nil {
 		return err
 	}
 	w.e.emit(Event{Type: "sync", AccountID: w.id, MailboxID: mb.ID, Count: res.New})
-	if res.New > 0 && mb.Role == store.Inbox && mb.LastUID > 0 {
+	if res.New > 0 && mb.Role == store.Inbox && !initial {
 		w.e.emit(Event{Type: "new_mail", AccountID: w.id, MailboxID: mb.ID, Count: res.New})
 	}
 	return nil

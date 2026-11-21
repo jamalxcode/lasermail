@@ -2,6 +2,15 @@
 
 ## 0.1.0
 
-- First version: Gmail, iCloud and IMAP accounts; unified inbox; IDLE push; local full-text search; privacy filter
-  (remote images, tracking pixels, link cleaning, no scripts); compose, reply, forward, attachments; Keychain;
-  SwiftUI app with a native macOS mail layout; demo mode; CLI.
+First release.
+
+- Gmail (incl. Google Workspace), iCloud and other IMAP accounts, side by side in one unified inbox (All Inboxes,
+  Flagged, Drafts, Sent) plus each account's folders.
+- New mail arrives instantly (IMAP IDLE), with notifications and a Dock badge.
+- Fast local search across all accounts, including message text.
+- Privacy: remote images blocked until you load them, tracking pixels always blocked, tracking tags removed from
+  links, no scripts in messages, quiet outgoing mail (no app name, time zone or computer name), no read receipts,
+  passwords in the Keychain, mail stored only on your Mac.
+- Read, reply, reply all, forward (with attachments), archive, delete, junk, flag, mark read/unread, move, save
+  attachments; Mail's keyboard shortcuts and swipe actions.
+- A native macOS mail layout: three columns, sidebar with Favorites and accounts, toolbar, compose window.

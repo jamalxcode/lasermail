@@ -5,6 +5,8 @@ import LaserKit
 /// The engine keeps running in the background while the app is open and is
 /// stopped when the app quits.
 final class DaemonLauncher: @unchecked Sendable {
+    /// The launcher of this app run, so quitting can stop the engine it started.
+    nonisolated(unsafe) static weak var current: DaemonLauncher?
     let dataDir: String
     let socketPath: String
     private var process: Process?
@@ -14,6 +16,7 @@ final class DaemonLauncher: @unchecked Sendable {
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         dataDir = env["LASER_DATA"] ?? support.appendingPathComponent("Laser Email").path
         socketPath = env["LASER_SOCKET"] ?? (dataDir as NSString).appendingPathComponent("laserd.sock")
+        DaemonLauncher.current = self
     }
 
     private var laserdURL: URL? {

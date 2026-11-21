@@ -9,6 +9,13 @@ server) in one unified inbox. Built like `jamalxcode/laserdot-go`: a pure-Go eng
 (accounts, IMAP sync with IDLE push, the local store and search, the privacy filter, sending), and a thin SwiftUI
 shell in the style of a native macOS mail app talks to it over a Unix socket.
 
+## Key documents
+
+- `docs/BUSINESS-RULES.md`: every rule the app follows, numbered, with where it lives. A behaviour change updates
+  it in the same commit.
+- `docs/DECISIONS.md`: why things are built this way. Add an entry for each significant decision.
+- `CHANGELOG.md`: a new `## x.y.z` section merged to `main` releases that version (see Releases below).
+
 ## Pillars (don't break these)
 
 1. **Privacy by construction.** Mail is shown only after `internal/privacy` sanitizes it (no scripts, forms,
@@ -67,6 +74,14 @@ app/scripts/bundle.sh && app/scripts/selftest.sh
   `app/scripts/decode-screenshots.py` (log from `gh api repos/jamalxcode/lasermail/actions/jobs/<id>/logs`) to look
   at the UI; extend the self-test for visible changes.
 - Run gofmt, vet and the full suite before committing.
+
+## Releases
+
+`.github/workflows/release.yml` runs after CI passes on `main`: if the newest `CHANGELOG.md` version has no GitHub
+release, it builds a universal app (`build-go.sh universal`, `ARCHS="--arch arm64 --arch x86_64" bundle.sh`),
+makes `LaserEmail-<v>.dmg`, checks that the app in the disk image launches its bundled engine and stops it on
+quit, and publishes the release with a SHA-256. The app is ad-hoc signed (no Developer ID yet), so users use
+"Open Anyway" once. Optional secrets `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` turn on Sign in with Google.
 
 ## Conventions
 

@@ -11,6 +11,7 @@ app="build/Laser Email.app"
 rm -rf "$app"
 mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
 cp "$bin/LaserEmail" "$app/Contents/MacOS/LaserEmail"
+chmod 755 "$app/Contents/MacOS/LaserEmail"
 cp build/go/laserd "$app/Contents/MacOS/laserd"
 sed -e "s/__VERSION__/$VERSION/" -e "s/__BUILD__/$BUILD/" Info.plist > "$app/Contents/Info.plist"
 # Icon: 1024 px PNG → .icns

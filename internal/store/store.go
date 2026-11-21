@@ -464,7 +464,8 @@ func (s *Store) List(q Query) ([]*Message, error) {
 	}
 	switch {
 	case q.Flagged:
-		where = append(where, `m.flagged=1`)
+		// Same rule as the badge: not in Trash, and not Gmail's All Mail copy.
+		where = append(where, `m.flagged=1`, `m.mailbox_id NOT IN (SELECT id FROM mailboxes WHERE role IN ('trash','all'))`)
 	case q.MailboxID != 0:
 		where = append(where, `m.mailbox_id=?`)
 		args = append(args, q.MailboxID)

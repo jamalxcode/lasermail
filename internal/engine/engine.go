@@ -200,7 +200,12 @@ func tokenKey(id int64) string    { return fmt.Sprintf("account-%d-oauth", id) }
 // AddAccount checks the login, then saves the account and starts syncing it.
 func (e *Engine) AddAccount(ctx context.Context, n NewAccount) (*store.Account, error) {
 	n.Email = strings.TrimSpace(n.Email)
-	if !strings.Contains(n.Email, "@") {
+	if n.OAuth && n.Kind == "" {
+		n.Kind = provider.Gmail
+	}
+	// With Sign in with Google the address can be left empty: the account the
+	// user picks in the browser decides it.
+	if !strings.Contains(n.Email, "@") && !(n.OAuth && n.Email == "") {
 		return nil, errors.New("enter a full email address")
 	}
 	if n.Kind == "" {
@@ -229,6 +234,13 @@ func (e *Engine) AddAccount(ctx context.Context, n NewAccount) (*store.Account, 
 		if tok, err = e.cfg.OAuth.Authorize(ctx, n.Email, open); err != nil {
 			return nil, err
 		}
+		if tok.Email != "" {
+			n.Email = tok.Email // the account actually chosen, whatever was typed
+		}
+		if !strings.Contains(n.Email, "@") {
+			return nil, errors.New("Google did not say which account was chosen; enter the address and try again")
+		}
+		a.Email = n.Email
 		a.Auth = provider.OAuth
 	} else {
 		n.Password = provider.CleanPassword(n.Password)
@@ -335,6 +347,16 @@ func tryLogin(ctx context.Context, set provider.Settings, kind provider.Kind, em
 			}
 			last = err
 		}
+	}
+	if (kind == provider.ICloud || kind == provider.Gmail) && !provider.LooksLikeAppPassword(password) {
+		what := "an app-specific password"
+		where := "account.apple.com → Sign-In and Security → App-Specific Passwords"
+		if kind == provider.Gmail {
+			what, where = "an app password", "myaccount.google.com/apppasswords (2-Step Verification must be on)"
+		}
+		return "", "", fmt.Errorf("What you entered (%d characters) isn't %s: those are 16 lowercase letters, like abcd-efgh-ijkl-mnop. "+
+			"Your account's own password doesn't work in mail apps. Make one at %s and paste it here. (%w)",
+			len([]rune(password)), what, where, last)
 	}
 	if kind == provider.ICloud {
 		return "", "", fmt.Errorf("iCloud refused the sign-in for %s. Use an app-specific password made at account.apple.com "+

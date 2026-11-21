@@ -50,6 +50,19 @@ Read as four requirements: native-feeling Mac app, Go, many Gmail + iCloud accou
   everything is refused. SMTP keeps the full address. A refused login is retried at most four times, only while
   adding or updating an account, so it can't trip Apple's lockout during normal syncing.
 
+### 3b. Gmail without app passwords; iCloud can't (0.1.6)
+
+- **Request:** "I don't want extra steps" for Gmail and iCloud sign-in.
+- **Gmail:** Google ended password sign-in for third-party mail apps in 2022; the only ways are an app password or
+  OAuth. So **Sign in with Google** becomes the main Gmail path: the browser opens, the user picks an account and
+  allows access; the app learns the address from the ID token (scopes `https://mail.google.com/ openid email`), so
+  nothing is typed. It needs the owner's Google OAuth client (Desktop app) once; see `docs/gmail-oauth.md`.
+  Borrowing another app's published client id (as some clients do) was rejected: it breaks Google's terms and
+  would stop working without notice.
+- **iCloud:** Apple has no OAuth for third-party IMAP; every non-Apple mail app needs an app-specific password.
+  The step can't be removed, so the form now walks through it, and a refused password that isn't shaped like an
+  app-specific password (16 lowercase letters) is called out as such.
+
 ## 4. Privacy model: defense in depth
 
 - **Decision:** two independent layers decide what a message may load: the Go sanitizer (allowlist rebuild,

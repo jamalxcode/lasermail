@@ -2,6 +2,7 @@ package oauth
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -21,7 +22,9 @@ func TestAuthorizeAndRefresh(t *testing.T) {
 				return
 			}
 			gotVerifier = r.Form.Get("code_verifier")
-			json.NewEncoder(w).Encode(map[string]any{"access_token": "a1", "refresh_token": "r1", "expires_in": 3600})
+			claims := base64.RawURLEncoding.EncodeToString([]byte(`{"email":"me@gmail.com","email_verified":true}`))
+			json.NewEncoder(w).Encode(map[string]any{"access_token": "a1", "refresh_token": "r1", "expires_in": 3600,
+				"id_token": "eyJhbGciOiJSUzI1NiJ9." + claims + ".sig"})
 		case "refresh_token":
 			json.NewEncoder(w).Encode(map[string]any{"access_token": "a2", "expires_in": 3600})
 		}
@@ -31,7 +34,7 @@ func TestAuthorizeAndRefresh(t *testing.T) {
 	open := func(u string) error {
 		p, _ := url.Parse(u)
 		q := p.Query()
-		if q.Get("scope") != GmailScope || q.Get("code_challenge_method") != "S256" || q.Get("login_hint") != "me@gmail.com" {
+		if q.Get("scope") != "https://mail.google.com/ openid email" || q.Get("code_challenge_method") != "S256" || q.Get("login_hint") != "me@gmail.com" {
 			t.Errorf("auth url %s", u)
 		}
 		// Play the browser: Google redirects back to the loopback listener.
@@ -47,7 +50,7 @@ func TestAuthorizeAndRefresh(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if tk.Access != "a1" || tk.Refresh != "r1" || !tk.Valid() || len(gotVerifier) < 43 {
+	if tk.Access != "a1" || tk.Refresh != "r1" || !tk.Valid() || len(gotVerifier) < 43 || tk.Email != "me@gmail.com" {
 		t.Fatalf("token %+v verifier %q", tk, gotVerifier)
 	}
 	nt, err := c.Refresh(context.Background(), tk)

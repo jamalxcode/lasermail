@@ -60,3 +60,14 @@ func TestLoginNamesAndPasswords(t *testing.T) {
 		t.Fatalf("gmail variants %q", v)
 	}
 }
+
+func TestLooksLikeAppPassword(t *testing.T) {
+	for p, want := range map[string]bool{
+		"abcd-efgh-ijkl-mnop": true, "abcd efgh ijkl mnop": true, "abcdefghijklmnop": true,
+		"MyPassword2024!": false, "abcd-efgh-ijkl-mno": false, "ABCD-EFGH-IJKL-MNOP": false, "": false,
+	} {
+		if got := LooksLikeAppPassword(p); got != want {
+			t.Errorf("%q: got %v", p, got)
+		}
+	}
+}

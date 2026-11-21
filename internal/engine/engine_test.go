@@ -484,8 +484,13 @@ func TestICloudSignIn(t *testing.T) {
 	f.srv.AddUser(u)
 	set := provider.Settings{IMAP: f.imapAddr, SMTP: f.smtpAddr}
 	_, err := f.e.AddAccount(context.Background(), NewAccount{Email: "yodabasket@icloud.com", Kind: provider.ICloud, Password: "wrong", Settings: &set})
-	if !errors.Is(err, imapsync.ErrAuth) || !strings.Contains(err.Error(), "app-specific password") {
+	if !errors.Is(err, imapsync.ErrAuth) || !strings.Contains(err.Error(), "isn't an app-specific password") || !strings.Contains(err.Error(), "(5 characters)") {
 		t.Fatalf("wrong password: %v", err)
+	}
+	// Shaped like an app-specific password but refused: the general advice.
+	_, err = f.e.AddAccount(context.Background(), NewAccount{Email: "yodabasket@icloud.com", Kind: provider.ICloud, Password: "abcd-efgh-ijkl-mnop", Settings: &set})
+	if !errors.Is(err, imapsync.ErrAuth) || !strings.Contains(err.Error(), "iCloud refused") {
+		t.Fatalf("wrong app-specific password: %v", err)
 	}
 }
 

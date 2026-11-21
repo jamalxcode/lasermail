@@ -137,6 +137,7 @@ struct AddAccountSheet: View {
     @State private var smtpPort = "465"
     @State private var working = false
     @State private var error: String?
+    @State private var useAppPassword = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -178,12 +179,17 @@ struct AddAccountSheet: View {
         .frame(width: 460)
     }
 
+    /// Gmail with Sign in with Google available: no address or password to type.
+    private func googleSignIn(_ p: Provider) -> Bool { p == .gmail && model.oauthAvailable && !useAppPassword }
+
     @ViewBuilder private func form(_ p: Provider) -> some View {
         Text("Add \(p == .imap ? "a Mail Account" : p.title)").font(.headline)
         Form {
             TextField("Name", text: $name, prompt: Text("Shown to people you write to"))
-            TextField("Email Address", text: $email, prompt: Text(p == .icloud ? "you@icloud.com" : p == .gmail ? "you@gmail.com" : "you@example.com"))
-            SecureField(p == .icloud ? "App-Specific Password" : "App Password", text: $password, prompt: Text("xxxx xxxx xxxx xxxx"))
+            if !googleSignIn(p) {
+                TextField("Email Address", text: $email, prompt: Text(p == .icloud ? "you@icloud.com" : p == .gmail ? "you@gmail.com" : "you@example.com"))
+                SecureField(p == .icloud ? "App-Specific Password" : "App Password", text: $password, prompt: Text("xxxx xxxx xxxx xxxx"))
+            }
             if p == .imap {
                 TextField("Incoming (IMAP) Server", text: $imapHost, prompt: Text("imap.example.com"))
                 TextField("IMAP Port (TLS)", text: $imapPort)
@@ -193,10 +199,16 @@ struct AddAccountSheet: View {
         }
         .formStyle(.grouped)
         .disabled(working)
-        Text(help(p))
+        Text(googleSignIn(p)
+             ? "Your browser opens Google's sign-in page. Pick your account and allow Laser Email to read and send mail. The sign-in is kept only in your Keychain; your Google password never passes through Laser Email."
+             : help(p))
             .font(.caption)
             .foregroundStyle(.secondary)
             .fixedSize(horizontal: false, vertical: true)
+        if working && googleSignIn(p) {
+            Label("Waiting for you to finish signing in in your browser…", systemImage: "safari")
+                .font(.callout)
+        }
         if let error {
             Label(error, systemImage: "exclamationmark.triangle.fill")
                 .foregroundStyle(.red)
@@ -204,20 +216,25 @@ struct AddAccountSheet: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         HStack {
-            if p != .imap, let url = URL(string: model.presets[p.rawValue]?.helpUrl ?? "") {
+            if googleSignIn(p) {
+                Button("Use an app password instead") { useAppPassword = true; error = nil }
+                    .buttonStyle(.link)
+            } else if p != .imap, let url = URL(string: model.presets[p.rawValue]?.helpUrl ?? "") {
                 Button(p == .icloud ? "Make an App-Specific Password…" : "Make an App Password…") { NSWorkspace.shared.open(url) }
                     .buttonStyle(.link)
             }
             Spacer()
             if working { ProgressView().controlSize(.small) }
             Button("Back") { provider = nil; resetForm() }.disabled(working)
-            if p == .gmail && model.oauthAvailable {
+            if googleSignIn(p) {
                 Button("Sign in with Google…") { Task { await add(p, oauth: true) } }
-                    .disabled(working || email.isEmpty)
+                    .keyboardShortcut(.defaultAction)
+                    .disabled(working)
+            } else {
+                Button("Sign In") { Task { await add(p, oauth: false) } }
+                    .keyboardShortcut(.defaultAction)
+                    .disabled(working || email.isEmpty || password.isEmpty)
             }
-            Button("Sign In") { Task { await add(p, oauth: false) } }
-                .keyboardShortcut(.defaultAction)
-                .disabled(working || email.isEmpty || password.isEmpty)
         }
     }
 
@@ -232,6 +249,7 @@ struct AddAccountSheet: View {
         smtpHost = ""
         smtpPort = "465"
         error = nil
+        useAppPassword = false
     }
 
     private func help(_ p: Provider) -> String {
@@ -239,7 +257,11 @@ struct AddAccountSheet: View {
         case .gmail:
             return "Gmail needs an app password (Google Account ▸ Security ▸ 2-Step Verification ▸ App passwords). It is stored only in your Keychain."
         case .icloud:
-            return "iCloud needs an app-specific password (account.apple.com ▸ Sign-In and Security ▸ App-Specific Passwords). It is stored only in your Keychain."
+            return "Apple requires an app-specific password for every mail app other than its own (your Apple Account password won't work):\n" +
+                "1. Click Make an App-Specific Password… and sign in to your Apple Account.\n" +
+                "2. Choose App-Specific Passwords, click +, and name it Laser Email.\n" +
+                "3. Copy the 16 letters Apple shows (abcd-efgh-ijkl-mnop) and paste them above.\n" +
+                "It is stored only in your Keychain."
         case .imap:
             return "Laser Email only connects with encryption (TLS or STARTTLS)."
         }

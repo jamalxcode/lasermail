@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.6
+
+- iCloud: the Add iCloud form walks you through making an app-specific password (Apple requires one for every
+  mail app other than its own).
+- A refused password that isn't shaped like an app password (16 letters) now says so, with how many characters
+  were entered: usually the account's own password was used.
+- Gmail is ready for Sign in with Google (pick your account in the browser, nothing to type) once a Google OAuth
+  client is configured for the build.
+
 ## 0.1.5
 
 - A release for trying **Check for Updates…**: from 0.1.4, choose Laser Email ▸ Check for Updates…, then Install

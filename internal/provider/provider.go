@@ -134,6 +134,22 @@ func CleanPassword(p string) string {
 	}, p)
 }
 
+// LooksLikeAppPassword: Apple's app-specific passwords and Google's app
+// passwords are 16 lowercase letters (shown as xxxx-xxxx-xxxx-xxxx or in four
+// groups of four). Anything else is probably the account's real password.
+func LooksLikeAppPassword(p string) bool {
+	p = strings.ReplaceAll(CleanPassword(p), "-", "")
+	if len(p) != 16 {
+		return false
+	}
+	for _, r := range p {
+		if r < 'a' || r > 'z' {
+			return false
+		}
+	}
+	return true
+}
+
 // PasswordVariants are the forms of a cleaned password to try. Apple shows
 // app-specific passwords as xxxx-xxxx-xxxx-xxxx; if the hyphenated form is
 // refused, the same letters without hyphens are tried.

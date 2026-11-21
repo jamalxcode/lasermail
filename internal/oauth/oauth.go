@@ -36,6 +36,9 @@ const (
 	GoogleAuthURL  = "https://accounts.google.com/o/oauth2/v2/auth"
 	GoogleTokenURL = "https://oauth2.googleapis.com/token"
 	GmailScope     = "https://mail.google.com/"
+	// Scopes asked for: Gmail over IMAP/SMTP, plus the account's address
+	// (OpenID "email"), so the user picks an account instead of typing it.
+	Scopes = GmailScope + " openid email"
 )
 
 func (c Config) authURL() string {
@@ -57,6 +60,8 @@ type Token struct {
 	Access  string    `json:"access_token"`
 	Refresh string    `json:"refresh_token"`
 	Expiry  time.Time `json:"expiry"`
+	// Email is the Google account the user chose (from the ID token).
+	Email string `json:"email,omitempty"`
 }
 
 // Valid: usable for at least another minute.
@@ -90,7 +95,7 @@ func (c Config) Authorize(ctx context.Context, email string, open func(string) e
 
 	q := url.Values{
 		"client_id": {c.ClientID}, "redirect_uri": {redirect}, "response_type": {"code"},
-		"scope": {GmailScope}, "code_challenge": {challenge}, "code_challenge_method": {"S256"},
+		"scope": {Scopes}, "code_challenge": {challenge}, "code_challenge_method": {"S256"},
 		"state": {state}, "access_type": {"offline"}, "prompt": {"consent"},
 	}
 	if email != "" {
@@ -179,6 +184,7 @@ func (c Config) exchange(ctx context.Context, v url.Values) (*Token, error) {
 		Access    string `json:"access_token"`
 		Refresh   string `json:"refresh_token"`
 		ExpiresIn int    `json:"expires_in"`
+		IDToken   string `json:"id_token"`
 		Error     string `json:"error"`
 		Desc      string `json:"error_description"`
 	}
@@ -188,7 +194,30 @@ func (c Config) exchange(ctx context.Context, v url.Values) (*Token, error) {
 	if resp.StatusCode != 200 || body.Access == "" {
 		return nil, fmt.Errorf("token request failed: %s %s", body.Error, body.Desc)
 	}
-	return &Token{Access: body.Access, Refresh: body.Refresh, Expiry: time.Now().Add(time.Duration(body.ExpiresIn) * time.Second)}, nil
+	return &Token{Access: body.Access, Refresh: body.Refresh, Expiry: time.Now().Add(time.Duration(body.ExpiresIn) * time.Second),
+		Email: emailFromIDToken(body.IDToken)}, nil
+}
+
+// emailFromIDToken reads the verified address from an OpenID ID token. It
+// came straight from Google's token endpoint over TLS, so (as OpenID Connect
+// allows for that case) its signature isn't checked again here.
+func emailFromIDToken(t string) string {
+	parts := strings.Split(t, ".")
+	if len(parts) != 3 {
+		return ""
+	}
+	b, err := base64.RawURLEncoding.DecodeString(strings.TrimRight(parts[1], "="))
+	if err != nil {
+		return ""
+	}
+	var claims struct {
+		Email    string `json:"email"`
+		Verified bool   `json:"email_verified"`
+	}
+	if json.Unmarshal(b, &claims) != nil || !claims.Verified {
+		return ""
+	}
+	return claims.Email
 }
 
 // XOAuth2 is the SASL XOAUTH2 mechanism Gmail uses for IMAP and SMTP.

@@ -100,4 +100,5 @@ Read as four requirements: native-feeling Mac app, Go, many Gmail + iCloud accou
 
 - First created as `jamalxcode/laser-email`, then moved to **`jamalxcode/lasermail`** at the owner's request;
   the Go module path follows the repo.
-- The repo is private, so macOS CI minutes count 10×; CI keeps a single Mac job.
+- The repo started private and was made **public** so the DMG downloads without a GitHub login (and macOS CI
+  minutes are free). The old `laser-email` repo was deleted.

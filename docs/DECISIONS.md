@@ -1,5 +1,11 @@
 # Decisions and thought process
 
+> **2026-11-21: Laser Email becomes Laser Messenger.** The owner dropped email (Google and Apple sign-in hurdles,
+> and mail servers at home are blocked or distrusted) for an owner-less, peer-to-peer messenger with key-based
+> identities and a credit currency earned by running super nodes. The full design and every decision are in
+> `docs/MESSENGER.md`. The entries below record the email era; Laser Email stays released until the messenger
+> replaces it.
+
 Why Laser Email is built the way it is. Each entry: what was decided, what else was considered, and why.
 `BUSINESS-RULES.md` lists the resulting rules.
 

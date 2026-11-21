@@ -133,7 +133,9 @@ func (w *worker) session(ctx context.Context) error {
 		}
 		// IDLE until the server reports a change, a kick, or the next full pass.
 		ictx, cancel := context.WithTimeout(ctx, max(time.Until(lastFull.Add(w.e.cfg.FullSyncEvery)), time.Second))
+		watcher := make(chan struct{})
 		go func() {
+			defer close(watcher)
 			select {
 			case <-w.kick:
 				kicked.Store(true)
@@ -143,6 +145,9 @@ func (w *worker) session(ctx context.Context) error {
 		}()
 		_, err = c.Idle(ictx)
 		cancel()
+		// Wait for the watcher: a kick it takes after IDLE ended must be seen
+		// by the next pass, not lost until the next full sync.
+		<-watcher
 		if err != nil && ctx.Err() == nil && ictx.Err() == nil {
 			return err
 		}

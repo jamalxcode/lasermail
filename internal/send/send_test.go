@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jamalxcode/laser-email/internal/provider"
+	"github.com/jamalxcode/lasermail/internal/provider"
 )
 
 func server(t *testing.T) (*FakeServer, provider.Server) {

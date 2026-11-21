@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jamalxcode/laser-email/internal/msg"
-	"github.com/jamalxcode/laser-email/internal/provider"
+	"github.com/jamalxcode/lasermail/internal/msg"
+	"github.com/jamalxcode/lasermail/internal/provider"
 	_ "modernc.org/sqlite"
 )
 

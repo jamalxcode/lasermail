@@ -8,8 +8,8 @@ import (
 	"github.com/emersion/go-imap/v2"
 	"github.com/emersion/go-imap/v2/imapclient"
 
-	"github.com/jamalxcode/laser-email/internal/msg"
-	"github.com/jamalxcode/laser-email/internal/store"
+	"github.com/jamalxcode/lasermail/internal/msg"
+	"github.com/jamalxcode/lasermail/internal/store"
 )
 
 // Options tune how much is downloaded.

@@ -17,7 +17,7 @@ import (
 	"github.com/emersion/go-message/charset"
 	"github.com/emersion/go-sasl"
 
-	"github.com/jamalxcode/laser-email/internal/provider"
+	"github.com/jamalxcode/lasermail/internal/provider"
 )
 
 // Credentials log a connection in. Exactly one of Password and SASL is used.

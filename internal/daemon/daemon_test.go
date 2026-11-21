@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jamalxcode/laser-email/internal/engine"
-	"github.com/jamalxcode/laser-email/internal/ipc"
-	"github.com/jamalxcode/laser-email/internal/secret"
-	"github.com/jamalxcode/laser-email/internal/store"
+	"github.com/jamalxcode/lasermail/internal/engine"
+	"github.com/jamalxcode/lasermail/internal/ipc"
+	"github.com/jamalxcode/lasermail/internal/secret"
+	"github.com/jamalxcode/lasermail/internal/store"
 )
 
 // The demo data through the real protocol: what the app sees.

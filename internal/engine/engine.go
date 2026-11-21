@@ -15,11 +15,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jamalxcode/laser-email/internal/imapsync"
-	"github.com/jamalxcode/laser-email/internal/oauth"
-	"github.com/jamalxcode/laser-email/internal/provider"
-	"github.com/jamalxcode/laser-email/internal/secret"
-	"github.com/jamalxcode/laser-email/internal/store"
+	"github.com/jamalxcode/lasermail/internal/imapsync"
+	"github.com/jamalxcode/lasermail/internal/oauth"
+	"github.com/jamalxcode/lasermail/internal/provider"
+	"github.com/jamalxcode/lasermail/internal/secret"
+	"github.com/jamalxcode/lasermail/internal/store"
 )
 
 // Config for New.

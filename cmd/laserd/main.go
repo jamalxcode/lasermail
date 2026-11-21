@@ -12,11 +12,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/jamalxcode/laser-email/internal/browser"
-	"github.com/jamalxcode/laser-email/internal/daemon"
-	"github.com/jamalxcode/laser-email/internal/engine"
-	"github.com/jamalxcode/laser-email/internal/oauth"
-	"github.com/jamalxcode/laser-email/internal/paths"
+	"github.com/jamalxcode/lasermail/internal/browser"
+	"github.com/jamalxcode/lasermail/internal/daemon"
+	"github.com/jamalxcode/lasermail/internal/engine"
+	"github.com/jamalxcode/lasermail/internal/oauth"
+	"github.com/jamalxcode/lasermail/internal/paths"
 )
 
 // Google OAuth client for "Sign in with Google", embedded by release builds

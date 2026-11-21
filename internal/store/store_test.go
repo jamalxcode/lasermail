@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jamalxcode/laser-email/internal/msg"
-	"github.com/jamalxcode/laser-email/internal/provider"
+	"github.com/jamalxcode/lasermail/internal/msg"
+	"github.com/jamalxcode/lasermail/internal/provider"
 )
 
 func open(t *testing.T) *Store {

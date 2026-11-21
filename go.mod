@@ -1,4 +1,4 @@
-module github.com/jamalxcode/laser-email
+module github.com/jamalxcode/lasermail
 
 go 1.26.0
 

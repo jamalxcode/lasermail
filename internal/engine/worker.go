@@ -6,8 +6,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/jamalxcode/laser-email/internal/imapsync"
-	"github.com/jamalxcode/laser-email/internal/store"
+	"github.com/jamalxcode/lasermail/internal/imapsync"
+	"github.com/jamalxcode/lasermail/internal/store"
 )
 
 // worker syncs one account: a full pass over its folders, then IDLE on the

@@ -123,7 +123,7 @@ func TestDependenciesDontSpeakHTTP(t *testing.T) {
 	}
 	for _, line := range strings.Split(string(out), "\n") {
 		f := strings.Fields(line)
-		if len(f) == 0 || strings.HasPrefix(f[0], "github.com/jamalxcode/laser-email/") {
+		if len(f) == 0 || strings.HasPrefix(f[0], "github.com/jamalxcode/lasermail/") {
 			continue
 		}
 		for _, im := range f[1:] {

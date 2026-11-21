@@ -6,7 +6,7 @@ cd "$(dirname "$0")/../.."
 out=app/build/go
 mkdir -p "$out"
 ver="${VERSION:-dev}"
-ld="-s -w -X github.com/jamalxcode/laser-email/internal/daemon.Version=$ver"
+ld="-s -w -X github.com/jamalxcode/lasermail/internal/daemon.Version=$ver"
 if [ -n "${GOOGLE_CLIENT_ID:-}" ]; then
   ld="$ld -X main.googleClientID=$GOOGLE_CLIENT_ID -X main.googleClientSecret=${GOOGLE_CLIENT_SECRET:-}"
 fi

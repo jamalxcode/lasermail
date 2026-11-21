@@ -16,11 +16,11 @@ import (
 
 	"golang.org/x/term"
 
-	"github.com/jamalxcode/laser-email/internal/engine"
-	"github.com/jamalxcode/laser-email/internal/ipc"
-	"github.com/jamalxcode/laser-email/internal/msg"
-	"github.com/jamalxcode/laser-email/internal/paths"
-	"github.com/jamalxcode/laser-email/internal/store"
+	"github.com/jamalxcode/lasermail/internal/engine"
+	"github.com/jamalxcode/lasermail/internal/ipc"
+	"github.com/jamalxcode/lasermail/internal/msg"
+	"github.com/jamalxcode/lasermail/internal/paths"
+	"github.com/jamalxcode/lasermail/internal/store"
 )
 
 const usage = `laser — Laser Email from the terminal (talks to laserd)

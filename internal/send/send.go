@@ -11,7 +11,7 @@ import (
 	"net/smtp"
 	"time"
 
-	"github.com/jamalxcode/laser-email/internal/provider"
+	"github.com/jamalxcode/lasermail/internal/provider"
 )
 
 // Credentials for SMTP: a password (PLAIN) or an OAuth access token (XOAUTH2).

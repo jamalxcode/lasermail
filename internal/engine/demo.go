@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jamalxcode/laser-email/internal/imapsync"
-	"github.com/jamalxcode/laser-email/internal/msg"
-	"github.com/jamalxcode/laser-email/internal/provider"
-	"github.com/jamalxcode/laser-email/internal/store"
+	"github.com/jamalxcode/lasermail/internal/imapsync"
+	"github.com/jamalxcode/lasermail/internal/msg"
+	"github.com/jamalxcode/lasermail/internal/provider"
+	"github.com/jamalxcode/lasermail/internal/store"
 )
 
 // SeedDemo fills an empty store with two made-up accounts and some mail, so
@@ -71,7 +71,7 @@ func (e *Engine) SeedDemo(now time.Time) error {
 				`<img src="https://shopwise.list-manage.com/track/open.php?u=abc&id=77" width="1" height="1"><img src="https://ct.sendgrid.net/wf/open?upn=xyz" width="1" height="1">`},
 		{home, store.Inbox, "Jordan Lee", "jordan.lee@fastmail.example", "Re: Climbing on Saturday?",
 			"I'm in! Let's meet at the gym at 9. I'll bring the spare harness.\n\n> Anyone up for climbing this Saturday?", 5 * time.Hour, true, false, false, ""},
-		{work, store.Inbox, "GitHub", "noreply@github.example", "[laser-email] CI passed on main",
+		{work, store.Inbox, "GitHub", "noreply@github.example", "[lasermail] CI passed on main",
 			"All checks have passed on main.\n\n✓ test (ubuntu-latest)\n✓ test (macos-latest)\n✓ app", 9 * time.Hour, true, false, false, ""},
 		{home, store.Inbox, "Bay Area Transit", "alerts@transit.example", "Service change on the Blue Line",
 			"Weekend track work: trains every 20 minutes between Downtown and Airport stations.", 26 * time.Hour, true, false, false, ""},

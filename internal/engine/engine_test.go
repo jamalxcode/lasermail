@@ -17,12 +17,12 @@ import (
 	"github.com/emersion/go-imap/v2/imapserver"
 	"github.com/emersion/go-imap/v2/imapserver/imapmemserver"
 
-	"github.com/jamalxcode/laser-email/internal/imapsync"
-	"github.com/jamalxcode/laser-email/internal/msg"
-	"github.com/jamalxcode/laser-email/internal/provider"
-	"github.com/jamalxcode/laser-email/internal/secret"
-	"github.com/jamalxcode/laser-email/internal/send"
-	"github.com/jamalxcode/laser-email/internal/store"
+	"github.com/jamalxcode/lasermail/internal/imapsync"
+	"github.com/jamalxcode/lasermail/internal/msg"
+	"github.com/jamalxcode/lasermail/internal/provider"
+	"github.com/jamalxcode/lasermail/internal/secret"
+	"github.com/jamalxcode/lasermail/internal/send"
+	"github.com/jamalxcode/lasermail/internal/store"
 )
 
 type lit struct{ *bytes.Reader }

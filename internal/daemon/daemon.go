@@ -9,11 +9,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/jamalxcode/laser-email/internal/engine"
-	"github.com/jamalxcode/laser-email/internal/ipc"
-	"github.com/jamalxcode/laser-email/internal/msg"
-	"github.com/jamalxcode/laser-email/internal/provider"
-	"github.com/jamalxcode/laser-email/internal/store"
+	"github.com/jamalxcode/lasermail/internal/engine"
+	"github.com/jamalxcode/lasermail/internal/ipc"
+	"github.com/jamalxcode/lasermail/internal/msg"
+	"github.com/jamalxcode/lasermail/internal/provider"
+	"github.com/jamalxcode/lasermail/internal/store"
 )
 
 // Version of laserd, set at build time.

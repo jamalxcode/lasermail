@@ -1,0 +1,53 @@
+name: ci
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  engine:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: gofmt
+        run: test -z "$(gofmt -l .)" || (gofmt -l . && exit 1)
+      - run: go vet ./...
+      - run: go test -race ./...
+      - name: Fuzz the parser and the privacy filter (short)
+        run: |
+          go test ./internal/privacy -run X -fuzz FuzzSanitize -fuzztime 30s
+          go test ./internal/msg -run X -fuzz FuzzParse -fuzztime 30s
+
+  # One Mac job (macOS minutes are expensive): the Go engine on darwin, the
+  # SwiftUI app built and tested, bundled, and driven by its self-test with
+  # screenshots printed into the log.
+  app:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Go tests on macOS
+        run: go test ./...
+      - name: Build laserd
+        run: app/scripts/build-go.sh
+      - name: Swift build and tests (against a real laserd)
+        working-directory: app
+        run: |
+          swift build
+          LASERD=$PWD/build/go/laserd swift test
+      - name: Bundle Laser Email.app
+        run: app/scripts/bundle.sh
+      - name: Self-test with screenshots
+        run: app/scripts/selftest.sh

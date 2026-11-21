@@ -61,7 +61,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-      - name: Build (universal: Apple silicon + Intel)
+      - name: "Build (universal: Apple silicon + Intel)"
         env:
           VERSION: ${{ needs.decide.outputs.version }}
           BUILD: ${{ github.run_number }}

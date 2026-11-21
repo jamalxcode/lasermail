@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.2
+
+- iCloud: fixed "Authentication Failed" with a correct app-specific password. Laser Email now signs in with the
+  user name Apple's settings call for (the part before the @, then the full address) and cleans invisible
+  characters that come along when a password is pasted.
+- A refused sign-in now says what to check (an app-specific password for iCloud, an app password for Gmail).
+- CI fuzzing runs a fixed number of inputs instead of a time limit.
+
 ## 0.1.1
 
 - New app icon: a neon-red envelope on a glass tile.

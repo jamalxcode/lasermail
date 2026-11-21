@@ -38,3 +38,25 @@ func TestCheckSecurity(t *testing.T) {
 		}
 	}
 }
+
+func TestLoginNamesAndPasswords(t *testing.T) {
+	if got := LoginNames(ICloud, " yodabasket@icloud.com "); len(got) != 2 || got[0] != "yodabasket" || got[1] != "yodabasket@icloud.com" {
+		t.Fatalf("icloud names %q", got)
+	}
+	if got := LoginNames(Gmail, "a@gmail.com"); len(got) != 1 || got[0] != "a@gmail.com" {
+		t.Fatalf("gmail names %q", got)
+	}
+	// Pasted from a web page: non-breaking spaces, a zero-width space, a BOM, a newline.
+	if got := CleanPassword("\u00a0abcd-efgh\u200b-ijkl-mnop\ufeff\n "); got != "abcd-efgh-ijkl-mnop" {
+		t.Fatalf("clean %q", got)
+	}
+	if got := CleanPassword("abcd efgh ijkl mnop"); got != "abcdefghijklmnop" {
+		t.Fatalf("gmail groups %q", got)
+	}
+	if v := PasswordVariants(ICloud, "abcd-efgh-ijkl-mnop"); len(v) != 2 || v[1] != "abcdefghijklmnop" {
+		t.Fatalf("variants %q", v)
+	}
+	if v := PasswordVariants(Gmail, "abcd-efgh-ijkl-mnop"); len(v) != 1 {
+		t.Fatalf("gmail variants %q", v)
+	}
+}

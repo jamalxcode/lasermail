@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"unicode"
 )
 
 // Kind of account.
@@ -57,6 +58,9 @@ type Settings struct {
 	SavesSent bool `json:"saves_sent"`
 	// HelpURL tells the user where to make an app password.
 	HelpURL string `json:"help_url"`
+	// IMAPUser is the user name the server accepted when the account was
+	// added (see LoginNames); empty means the first candidate.
+	IMAPUser string `json:"imap_user,omitempty"`
 }
 
 var presets = map[Kind]Settings{
@@ -100,9 +104,46 @@ func Detect(email string) Kind {
 	return Custom
 }
 
-// LoginName is the IMAP/SMTP user name. iCloud accepts the full address; so
-// does Gmail.
-func LoginName(k Kind, email string) string { return strings.TrimSpace(email) }
+// LoginNames are the IMAP user names to try, in order. Apple's settings for
+// iCloud Mail give the name part of the address ("emilyparker", not
+// "emilyparker@icloud.com") and say to try the full address if that fails.
+// Gmail and other servers take the full address.
+func LoginNames(k Kind, email string) []string {
+	email = strings.TrimSpace(email)
+	if k == ICloud {
+		if at := strings.LastIndexByte(email, '@'); at > 0 {
+			return []string{email[:at], email}
+		}
+	}
+	return []string{email}
+}
+
+// LoginName is the first user name to try (see LoginNames).
+func LoginName(k Kind, email string) string { return LoginNames(k, email)[0] }
+
+// CleanPassword removes what copying a password from a web page or a Notes
+// window drags along: spaces of every kind (Google shows app passwords in
+// groups of four), line breaks, and invisible characters such as zero-width
+// spaces, BOMs and direction marks.
+func CleanPassword(p string) string {
+	return strings.Map(func(r rune) rune {
+		if unicode.IsSpace(r) || unicode.Is(unicode.Cf, r) || unicode.IsControl(r) {
+			return -1
+		}
+		return r
+	}, p)
+}
+
+// PasswordVariants are the forms of a cleaned password to try. Apple shows
+// app-specific passwords as xxxx-xxxx-xxxx-xxxx; if the hyphenated form is
+// refused, the same letters without hyphens are tried.
+func PasswordVariants(k Kind, p string) []string {
+	out := []string{p}
+	if k == ICloud && strings.Count(p, "-") == 3 && len(p) == 19 {
+		out = append(out, strings.ReplaceAll(p, "-", ""))
+	}
+	return out
+}
 
 // CheckSecurity refuses plain-text connections to anything but loopback.
 func CheckSecurity(s Server) error {

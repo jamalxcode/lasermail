@@ -38,6 +38,18 @@ Read as four requirements: native-feeling Mac app, Go, many Gmail + iCloud accou
   Google's verification and a security assessment, which is out of reach at first. OAuth is fully built (PKCE,
   loopback redirect, refresh, XOAUTH2) so it switches on with a client id.
 
+### 3a. iCloud sign-in (fixed in 0.1.2)
+
+- **Problem:** a correct iCloud app-specific password was refused ("Authentication Failed").
+- **Cause:** Laser Email logged in to IMAP with the full address only, while Apple's settings give the name part
+  of the address as the IMAP user name (full address only as a fallback); and a pasted password could carry
+  invisible characters (the field showed 21 characters for a 19-character password), of which only plain spaces
+  were removed.
+- **Decision:** try Apple's documented user names in order, clean every invisible character from passwords, try
+  the hyphen-less form of an app-specific password, remember what worked, and give a specific message when
+  everything is refused. SMTP keeps the full address. A refused login is retried at most four times, only while
+  adding or updating an account, so it can't trip Apple's lockout during normal syncing.
+
 ## 4. Privacy model: defense in depth
 
 - **Decision:** two independent layers decide what a message may load: the Go sanitizer (allowlist rebuild,

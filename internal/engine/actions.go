@@ -243,7 +243,9 @@ func (e *Engine) Send(ctx context.Context, accountID int64, d *msg.Draft) error 
 	if err != nil {
 		return err
 	}
-	sc := send.Credentials{User: cred.User, Password: cred.Password, OAuthBearer: bearer}
+	// SMTP signs in with the full address (iCloud requires it for SMTP even
+	// when IMAP takes the name part).
+	sc := send.Credentials{User: a.Email, Password: cred.Password, OAuthBearer: bearer}
 	if err := send.Send(ctx, a.Settings.SMTP, sc, a.Email, d.Recipients(), raw); err != nil {
 		return err
 	}

@@ -446,3 +446,45 @@ func TestFirstSyncIsNotNewMail(t *testing.T) {
 		}
 	}
 }
+
+// iCloud: IMAP wants the name part of the address; the password was pasted
+// with invisible characters. Both server password forms must work.
+func TestICloudSignIn(t *testing.T) {
+	for _, serverPW := range []string{"abcd-efgh-ijkl-mnop", "abcdefghijklmnop"} {
+		f := setup(t)
+		u := imapmemserver.NewUser("yodabasket", serverPW) // the full address is not a valid login here
+		u.Create("INBOX", nil)
+		appendMsg(t, u, "INBOX", message("Ann <ann@a.test>", "Hello iCloud", "hi@a.test", "hi"))
+		f.srv.AddUser(u)
+		set := provider.Settings{IMAP: f.imapAddr, SMTP: f.smtpAddr}
+		a, err := f.e.AddAccount(context.Background(), NewAccount{Email: "yodabasket@icloud.com", Name: "yoda",
+			Kind: provider.ICloud, Password: "\u00a0abcd-efgh-ijkl-mnop\u200b\n", Settings: &set})
+		if err != nil {
+			t.Fatalf("server password %q: %v", serverPW, err)
+		}
+		if a.Settings.IMAPUser != "yodabasket" {
+			t.Fatalf("saved user %q", a.Settings.IMAPUser)
+		}
+		if pw, _ := f.e.secrets.Get(passwordKey(a.ID)); pw != serverPW {
+			t.Fatalf("saved password %q, server has %q", pw, serverPW)
+		}
+		waitFor(t, "icloud inbox", func() bool {
+			return find(f.list(store.Query{AccountID: a.ID, Role: store.Inbox}), "Hello iCloud") != nil
+		})
+		// Sending signs in to SMTP with the full address.
+		f.smtp.Secret = serverPW
+		if err := f.e.Send(context.Background(), a.ID, &msg.Draft{To: []msg.Address{{Email: "x@y.test"}}, Subject: "s", Text: "t"}); err != nil {
+			t.Fatalf("send: %v", err)
+		}
+	}
+	// A truly wrong password says what to check.
+	f := setup(t)
+	u := imapmemserver.NewUser("yodabasket", "right")
+	u.Create("INBOX", nil)
+	f.srv.AddUser(u)
+	set := provider.Settings{IMAP: f.imapAddr, SMTP: f.smtpAddr}
+	_, err := f.e.AddAccount(context.Background(), NewAccount{Email: "yodabasket@icloud.com", Kind: provider.ICloud, Password: "wrong", Settings: &set})
+	if !errors.Is(err, imapsync.ErrAuth) || !strings.Contains(err.Error(), "app-specific password") {
+		t.Fatalf("wrong password: %v", err)
+	}
+}

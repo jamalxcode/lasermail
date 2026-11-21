@@ -231,20 +231,25 @@ func (e *Engine) AddAccount(ctx context.Context, n NewAccount) (*store.Account, 
 		}
 		a.Auth = provider.OAuth
 	} else {
-		n.Password = strings.ReplaceAll(n.Password, " ", "") // Google shows app passwords in groups of four
+		n.Password = provider.CleanPassword(n.Password)
 		if n.Password == "" {
 			return nil, errors.New("enter the app password")
 		}
 	}
-	cred := imapsync.Credentials{User: provider.LoginName(n.Kind, n.Email), Password: n.Password}
 	if tok != nil {
-		cred = imapsync.Credentials{SASL: oauth.XOAuth2{User: n.Email, Token: tok.Access}}
+		c, err := imapsync.Dial(ctx, set.IMAP, imapsync.Credentials{SASL: oauth.XOAuth2{User: n.Email, Token: tok.Access}})
+		if err != nil {
+			return nil, err
+		}
+		c.Close()
+	} else {
+		user, pw, err := tryLogin(ctx, set, n.Kind, n.Email, n.Password)
+		if err != nil {
+			return nil, err
+		}
+		set.IMAPUser, n.Password = user, pw
+		a.Settings = set
 	}
-	c, err := imapsync.Dial(ctx, set.IMAP, cred)
-	if err != nil {
-		return nil, err
-	}
-	c.Close()
 	if a.Label == "" {
 		a.Label = map[provider.Kind]string{provider.Gmail: "Gmail", provider.ICloud: "iCloud"}[n.Kind]
 		if a.Label == "" {
@@ -254,6 +259,7 @@ func (e *Engine) AddAccount(ctx context.Context, n NewAccount) (*store.Account, 
 	if err := e.st.AddAccount(a); err != nil {
 		return nil, err
 	}
+	var err error
 	if tok != nil {
 		b, _ := json.Marshal(tok)
 		err = e.secrets.Set(tokenKey(a.ID), string(b))
@@ -294,22 +300,65 @@ func (e *Engine) UpdatePassword(ctx context.Context, id int64, password string) 
 	if err != nil {
 		return err
 	}
-	password = strings.ReplaceAll(password, " ", "")
-	c, err := imapsync.Dial(ctx, a.Settings.IMAP, imapsync.Credentials{User: provider.LoginName(a.Settings.Kind, a.Email), Password: password})
+	user, pw, err := tryLogin(ctx, a.Settings, a.Settings.Kind, a.Email, provider.CleanPassword(password))
 	if err != nil {
 		return err
 	}
-	c.Close()
-	if err := e.secrets.Set(passwordKey(id), password); err != nil {
+	if user != a.Settings.IMAPUser {
+		a.Settings.IMAPUser = user
+		if err := e.st.UpdateAccount(a); err != nil {
+			return err
+		}
+	}
+	if err := e.secrets.Set(passwordKey(id), pw); err != nil {
 		return err
 	}
 	e.SyncNow(id)
 	return nil
 }
 
+// tryLogin logs in with each user name and password form the provider
+// allows (provider.LoginNames, provider.PasswordVariants) and returns the
+// pair the server accepted. Only a refused login moves on to the next pair;
+// any other error (network, TLS) is returned at once.
+func tryLogin(ctx context.Context, set provider.Settings, kind provider.Kind, email, password string) (user, pw string, err error) {
+	var last error
+	for _, u := range provider.LoginNames(kind, email) {
+		for _, p := range provider.PasswordVariants(kind, password) {
+			c, err := imapsync.Dial(ctx, set.IMAP, imapsync.Credentials{User: u, Password: p})
+			if err == nil {
+				c.Close()
+				return u, p, nil
+			}
+			if !errors.Is(err, imapsync.ErrAuth) {
+				return "", "", err
+			}
+			last = err
+		}
+	}
+	if kind == provider.ICloud {
+		return "", "", fmt.Errorf("iCloud refused the sign-in for %s. Use an app-specific password made at account.apple.com "+
+			"(Sign-In and Security → App-Specific Passwords) for the Apple Account this address belongs to, not your Apple Account password; "+
+			"changing your Apple Account password revokes old app-specific passwords. (%w)", email, last)
+	}
+	if kind == provider.Gmail {
+		return "", "", fmt.Errorf("Gmail refused the sign-in for %s. Use an app password from myaccount.google.com/apppasswords "+
+			"(2-Step Verification must be on), not your Google password. (%w)", email, last)
+	}
+	return "", "", last
+}
+
+// imapUser is the user name an account logs in with.
+func imapUser(a *store.Account) string {
+	if a.Settings.IMAPUser != "" {
+		return a.Settings.IMAPUser
+	}
+	return provider.LoginName(a.Settings.Kind, a.Email)
+}
+
 // credentials loads (and refreshes) what logs an account in.
 func (e *Engine) credentials(ctx context.Context, a *store.Account) (imapsync.Credentials, string, error) {
-	user := provider.LoginName(a.Settings.Kind, a.Email)
+	user := imapUser(a)
 	if a.Auth != provider.OAuth {
 		pw, err := e.secrets.Get(passwordKey(a.ID))
 		if err != nil {

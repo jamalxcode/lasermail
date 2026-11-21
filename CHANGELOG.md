@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1
+
+- New app icon: a neon-red envelope on a glass tile.
+
 ## 0.1.0
 
 First release.

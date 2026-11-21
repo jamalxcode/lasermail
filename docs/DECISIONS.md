@@ -74,7 +74,8 @@ Read as four requirements: native-feeling Mac app, Go, many Gmail + iCloud accou
 
 - **Decision:** follow macOS Mail's conventions (three columns, Favorites + per-account sections, row layout,
   toolbar, shortcuts, the provider-choice sheet) with standard SwiftUI controls and SF Symbols.
-- **Not copied:** Apple's or Google's artwork and logos. The app icon is original (an envelope cut by a laser line).
+- **Not copied:** Apple's or Google's artwork and logos. The app icon is the owner's neon-red envelope on a glass tile (`app/Resources/AppIcon.png`, 1024 px, the tile
+  scaled to Apple's 824 px icon grid with a transparent surround).
 
 ## 8. Testing approach
 

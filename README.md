@@ -1,3 +1,5 @@
+<p align="center"><img src="app/Resources/AppIcon.png" width="160" alt="Laser Email icon"></p>
+
 # Laser Email
 
 **A private email client for macOS for people with many inboxes.** Add all your Gmail and iCloud accounts (and any

@@ -37,16 +37,26 @@ plans (history in `DECISIONS.md`).
 | W7 | **Self-hosted (owner: G12 c):** each board owner hosts their own board. The desktop app has a **host mode** (e.g. on a Mac mini) that acts as the board's introduction service and keeps the encrypted copy, so the board is available when no member is online; it can't read the board. Without a running host, members sync only when online together. |
 | W8 | **Clearing the table:** the owner can delete the whole board when the work is done ("files shared, decisions made, table cleared"). The cloud copy is deleted and every member's copy is wiped the next time it syncs. A modified app could ignore the wipe; the app says so. |
 
-## 3. Posts, replies, attachments
+## 3. The whiteboard: notes, connections, questions
 
 | # | Rule |
 |---|---|
-| P1 | The board holds **posts and replies** (one level: a post and its replies). |
-| P2 | Every post, reply, edit and deletion is **timestamped and signed** by the author's alias/ID number (owner: 6b). Signatures are checked by every member's app. |
-| P3 | Others see a post **only once it is submitted**; there's no live typing. |
-| P4 | **Editing:** only the author can edit; each edit shows the alias and time. |
-| P5 | **Deleting:** only the author can delete their own post. The content is removed; a marker remains with the alias and time of the deletion (owner: 7, 10). |
-| P6 | **Attachments:** anything (images, files, text), with no size limit (owner: 11, 14b). Large files sync like the rest; members' devices and the cloud copy must have room. |
+| P1 | Each board is a **whiteboard canvas** (zoom and pan) holding **post-it notes** placed anywhere. Notes can be coloured, resized and grouped by placing them near each other (owner, 2026-11-22). |
+| P1a | **Connections:** any member can draw a line between two notes, like a mind map (optionally with a short label and an arrow). Connections are signed and timestamped like notes; only their author removes them. |
+| P1b | **👍 / 👎 on every note:** one per member per note, changeable; counts and who voted are shown (read receipts and votes are visible, G17). |
+| P1c | **Question cards:** when input is needed, a member posts a multiple-choice question (single or multiple answers, optional deadline). Each member answers once (changeable until closed); results show live; the author closes it, and a closed question is locked and signed. |
+| P1d | **Replies:** each note has its own reply thread (one level). |
+| P2 | Every note, connection, vote, answer, reply, edit, move and deletion is **timestamped and signed** by the author's alias/ID number (owner: 6b). Signatures are checked by every member's app. |
+| P3 | Others see a note **only once it is submitted**; there's no live typing. |
+| P4 | **Editing and moving:** only the author edits a note's content; each edit shows the alias and time. Any member can move notes on the canvas to organise it (moves are recorded but not shown as edits). |
+| P5 | **Deleting:** only the author deletes their own note, connection or reply. The content is removed; a marker remains with the alias and time (owner: 7, 10). |
+| P6 | **Attachments on notes:** anything, with no size limit: links, images, PDFs, files, torrent files and magnet links (owner: 11, 14b, 2026-11-22). Images and PDFs preview on the note; links show their address (no automatic previews that would contact the site). |
+| P7 | **No tasks** (owner, 2026-11-22). |
+| P8 | **Decisions:** a note can be marked a Decision (proposer lists options, members vote or answer a question card, the proposer or owner closes it with the outcome); closed decisions are locked and signed, overturned only by a new decision that links to it; a **decision log** lists them all. |
+| P9 | **Design review:** comments can be pinned to a spot on an image or PDF page; a new version of a file keeps earlier versions and their comments viewable. |
+| P10 | **Discussion quality:** a note's author or the owner can mark its thread **resolved** with a one-line conclusion; a **"since you were last here"** view shows what's new; unsent notes are kept as **drafts** on the device; **templates** (meeting agenda, design brief, decision record, kickoff) start common boards. |
+| P11 | **Clearing the table:** first the app produces a signed **close-out pack** (decision log, closed questions with results, final file versions, the board as an image) that members keep; then the board is cleared and the workspace can be reused, empty, with the same members. |
+| P12 | **Convenience:** joining by an invitation QR code or link carrying the board password (the newcomer scans, picks an alias, waits for the owner's tap); keyboard shortcuts and drag-and-drop of files onto the canvas; notifications by default only for mentions and question cards awaiting your answer, the rest in a daily digest. |
 
 ## 3a. Gap decisions (owner, 2026-11-22)
 

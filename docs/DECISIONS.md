@@ -1,10 +1,14 @@
 # Decisions and thought process
 
-> **2026-11-21: Laser Email becomes Laser Messenger.** The owner dropped email (Google and Apple sign-in hurdles,
-> and mail servers at home are blocked or distrusted) for an owner-less, peer-to-peer messenger with key-based
-> identities and a credit currency earned by running super nodes. The full design and every decision are in
-> `docs/MESSENGER.md`. The entries below record the email era; Laser Email stays released until the messenger
-> replaces it.
+> **2026-11-22: the project is now Laser Room.** Laser Email (email client) was dropped on 2026-11-21 for Laser
+> Messenger (owner-less peer-to-peer messenger with a credit economy; its design is in this file's git history,
+> `docs/MESSENGER.md`). On 2026-11-22 that was dropped too, for **Laser Room**: private, invite-only work tables
+> where members are identified by a number their own device derives from its biometric unlock (WebAuthn passkey +
+> PRF, one-way, unique per workspace), post signed and timestamped messages, and the owner clears the table when
+> the work is done. The specification is `docs/SPEC.md`. Reasons for the turn: email providers' sign-in hurdles
+> (app passwords, OAuth verification) and mail servers at home being blocked; the messenger's economy and
+> owner-less ledger were judged too complex. The entries below record the email era; Laser Email stays released
+> until Laser Room replaces it.
 
 Why Laser Email is built the way it is. Each entry: what was decided, what else was considered, and why.
 `BUSINESS-RULES.md` lists the resulting rules.

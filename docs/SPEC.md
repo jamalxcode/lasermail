@@ -12,15 +12,17 @@ plans (history in `DECISIONS.md`).
 
 | # | Rule |
 |---|---|
-| I1 | On first use the device creates a passkey (WebAuthn) in its secure chip, unlocked only by the device's own biometric, or its PIN/password when it has no biometric hardware. Any unlock the device offers counts (owner: 1 a+b+c). |
-| I2 | **Two passwords, two jobs.** Both are produced on a device after its biometric scan, from the passkey's PRF output (a one-way function inside the secure chip), each with its own salt: (1) the **board password**, made by the owner's device when the board is created: it opens and encrypts the board and **is shared** with the people invited (W2); (2) each member's **personal password**, made by their own device for that board: it is **never shared**, it signs everything the member posts, and its one-way hash is the member's **ID number** in that board. Holding the board password lets someone open the board; only the personal password lets them post as themselves. Both are 256-bit and filled in by the app, never typed. Same device + same board → the same personal password and ID number; another board → unrelated ones (owner: 6a, O1, 2026-11-22). |
+| I0 | **Custody rule (owner, 2026-11-22):** biometrics are only the door. Apple, Google or anyone else must never hold, store or sync any Laser Room password or code: the Laser Room client app creates and keeps them. Hence Laser Room is an **installed app** (a web app could only use biometrics through passkeys, which Apple/Google keychains store and sync). |
+| I1 | The app asks the device's own biometric check (Face ID, Touch ID, Android fingerprint/face, Windows Hello; the device PIN/password where there is no biometric hardware). Any unlock the device offers counts (owner: 1 a+b+c). |
+| I1a | The app keeps all passwords in **its own encrypted vault** on the device, locked by a key in the device's security chip (Secure Enclave, Android Keystore/StrongBox, TPM) that opens only after a biometric check and is marked this-device-only, never synced. No passkeys, no iCloud Keychain, no Google Password Manager. |
+| I2 | **Two passwords, two jobs.** Both are created by the app (256-bit random) after a biometric check and kept in its vault (I1a): (1) the **board password**, made by the owner's device when the board is created: it opens and encrypts the board and **is shared** with the people invited (W2); (2) each member's **personal password**, made by their own device for that board: it is **never shared**, it signs everything the member posts, and its one-way hash is the member's **ID number** in that board. Holding the board password lets someone open the board; only the personal password lets them post as themselves. Both are 256-bit and filled in by the app, never typed. Same device + same board → the same personal password and ID number; another board → unrelated ones (owner: 6a, O1, 2026-11-22). |
 | I3 | No biometric data is read, stored or sent by Laser Room; the number can't be worked back to the person or their biometric. |
 | I4 | The number has to be unique **within the workspace only**; invitations bind one person to one member slot. |
 | I5 | The scan is done **once per device** (owner: 2c). After that the device holds the identity: "it's your device; keep it with you." |
 | I6 | **New device:** the workspace owner re-admits the person under the same alias (owner: 3b). |
 | I7 | **Lost device:** the owner re-admits the person; their old posts stay under their alias, and the re-admission is shown (owner: 4a). |
 | I8 | **Aliases:** chosen per workspace, unique within it (owner: 7a). An alias can be a real name or a made-up one; people reveal who they are, if they want to, outside Laser Room (message, email, call) (owner: 8). |
-| I9 | Passkey syncing through iCloud Keychain / Google Password Manager is allowed when the user has it on; Laser Room works with or without it (owner: O1 a). |
+| I9 | Nothing syncs through Apple or Google. A new device gets its own personal password; the owner re-admits the person under the same alias (I6). |
 
 ## 2. Workspaces (the work table)
 
@@ -49,8 +51,9 @@ plans (history in `DECISIONS.md`).
 ## 4. Architecture
 
 ```
-Laser Room web app (one app for Mac, Windows, iPhone, Android; installable to the home screen)
-├─ Identity     WebAuthn passkey + PRF → per-workspace ID number; signing key derived from it
+Laser Room installed app (Mac, Windows, iPhone, Android; one shared core)
+├─ Identity     device biometric check → app's own vault (security-chip key, this device only)
+│               → personal password + signing key per board; board passwords
 ├─ Board data   an append-only log of signed events (post, reply, edit, delete, invite, handover,
 │               clear) merged the same way on every device (CRDT), so copies always converge
 ├─ Encryption   a workspace key (shared with each invited member's key); every event and
@@ -66,7 +69,7 @@ Laser Room web app (one app for Mac, Windows, iPhone, Android; installable to th
 
 ## 5. Settled questions
 
-- **O1 → a:** passkey syncing is the user's choice; the biometric unlock produces the workspace password (I2).
+- **O1 → superseded:** no passkeys and no syncing through Apple or Google; the app holds its own secrets (I0, I1a).
 - **O2 → a:** the introduction service also keeps the encrypted cloud copy (W7).
 - **O3:** Safari wipes browser storage after 7 days without a visit unless the app is installed to the home
   screen; the cloud copy (W7) and installing the app keep boards safe.

@@ -13,7 +13,7 @@ plans (history in `DECISIONS.md`).
 | # | Rule |
 |---|---|
 | I1 | On first use the device creates a passkey (WebAuthn) in its secure chip, unlocked only by the device's own biometric, or its PIN/password when it has no biometric hardware. Any unlock the device offers counts (owner: 1 a+b+c). |
-| I2 | **The ID number and access password** are derived on the device: after the biometric scan, the passkey's PRF output for the workspace's salt (a one-way function inside the secure chip) becomes a **unique, complex password** (256-bit, never shown or typed; the web app fills it in itself) that gives access to the workspace, and a hash of it is the member's **ID number**. Same device + same workspace → same password and number; another workspace → unrelated ones (owner: 6a, O1). |
+| I2 | **Two passwords, two jobs.** Both are produced on a device after its biometric scan, from the passkey's PRF output (a one-way function inside the secure chip), each with its own salt: (1) the **board password**, made by the owner's device when the board is created: it opens and encrypts the board and **is shared** with the people invited (W2); (2) each member's **personal password**, made by their own device for that board: it is **never shared**, it signs everything the member posts, and its one-way hash is the member's **ID number** in that board. Holding the board password lets someone open the board; only the personal password lets them post as themselves. Both are 256-bit and filled in by the app, never typed. Same device + same board → the same personal password and ID number; another board → unrelated ones (owner: 6a, O1, 2026-11-22). |
 | I3 | No biometric data is read, stored or sent by Laser Room; the number can't be worked back to the person or their biometric. |
 | I4 | The number has to be unique **within the workspace only**; invitations bind one person to one member slot. |
 | I5 | The scan is done **once per device** (owner: 2c). After that the device holds the identity: "it's your device; keep it with you." |
@@ -27,10 +27,10 @@ plans (history in `DECISIONS.md`).
 | # | Rule |
 |---|---|
 | W1 | Workspaces are **private**. The creator (owner) invites people; there is no public listing or sign-up. A collaboration tool, not a public forum. |
-| W2 | Joining is **by invitation** from the owner. |
+| W2 | Joining is **by invitation**: the owner shares the board password (I2) with the person, through any channel they like (message, email, in person, QR code). |
 | W3 | **No removal** of members (owner: 11b). The owner controls membership by choosing carefully whom to invite; each member is responsible for their own content. The owner can clear the whole table (W8) and start a new one without someone. |
 | W4 | **Ownership can be handed over** to another member. |
-| W5 | **Everything is encrypted** with a key only members hold; any relay, introduction service or cloud copy sees locked data only (owner: 15a). |
+| W5 | **Everything is encrypted** with a key derived from the board password; any relay, introduction service or cloud copy sees locked data only (owner: 15a). Anyone who obtains the board password can read the board, so it should be shared privately. |
 | W6 | **Sync:** whoever opens the board is brought up to date with the latest version and saves it on their device. Members' copies sync with each other whenever they are online together (owner: 9). |
 | W7 | **Cloud copy:** an encrypted copy is kept by the introduction service we run, so the board is available when no member is online (owner: 9, O2 a). It can't read the board. |
 | W8 | **Clearing the table:** the owner can delete the whole board when the work is done ("files shared, decisions made, table cleared"). The cloud copy is deleted and every member's copy is wiped the next time it syncs. A modified app could ignore the wipe; the app says so. |

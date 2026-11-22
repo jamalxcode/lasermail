@@ -34,7 +34,7 @@ plans (history in `DECISIONS.md`).
 | W4 | **Ownership can be handed over** to another member. |
 | W5 | **Everything is encrypted** with a key derived from the board password; any relay, introduction service or cloud copy sees locked data only (owner: 15a). Anyone who obtains the board password can read the board, so it should be shared privately. |
 | W6 | **Sync:** whoever opens the board is brought up to date with the latest version and saves it on their device. Members' copies sync with each other whenever they are online together (owner: 9). |
-| W7 | **Cloud copy:** an encrypted copy is kept by the introduction service we run, so the board is available when no member is online (owner: 9, O2 a). It can't read the board. |
+| W7 | **Self-hosted (owner: G12 c):** each board owner hosts their own board. The desktop app has a **host mode** (e.g. on a Mac mini) that acts as the board's introduction service and keeps the encrypted copy, so the board is available when no member is online; it can't read the board. Without a running host, members sync only when online together. |
 | W8 | **Clearing the table:** the owner can delete the whole board when the work is done ("files shared, decisions made, table cleared"). The cloud copy is deleted and every member's copy is wiped the next time it syncs. A modified app could ignore the wipe; the app says so. |
 
 ## 3. Posts, replies, attachments
@@ -48,10 +48,38 @@ plans (history in `DECISIONS.md`).
 | P5 | **Deleting:** only the author can delete their own post. The content is removed; a marker remains with the alias and time of the deletion (owner: 7, 10). |
 | P6 | **Attachments:** anything (images, files, text), with no size limit (owner: 11, 14b). Large files sync like the rest; members' devices and the cloud copy must have room. |
 
+## 3a. Gap decisions (owner, 2026-11-22)
+
+| # | Decision |
+|---|---|
+| G1 | Joining needs the board password **and** the owner's approval. |
+| G2 | The owner can **mute** a member (they can read, not post); no removal (W3). |
+| G3 | If the owner disappears, the board **continues with no owner**: existing members read and post; owner-only actions (approvals, alias confirmations, re-admissions, clearing) stop. |
+| G4 | The device PIN is allowed only on devices without a biometric sensor; those members are shown as "PIN-verified". |
+| G5 | The host also stamps each post with its own clock; both times are shown if they differ. |
+| G6 | The owner's device confirms each new alias before it is used (unique within the board). |
+| G7 | One identity per device; shared devices aren't supported. |
+| G8 | Any member can export a signed copy of posts that anyone can verify. |
+| G9 | Phones download attachments when opened; desktops can keep everything. |
+| G10 | The host keeps a board until it is cleared, or until 90 days without anyone opening it (members are warned first). |
+| G11 | Before the table is cleared, members get a warning and a few days to save what they need. |
+| G12 | Each owner hosts their own board (W7). |
+| G13 | Phone notifications through Apple/Google push, carrying only an empty "wake up" (never content, passwords or codes). |
+| G14 | A workspace can hold several boards (topics). |
+| G15 | Local search of posts and attachment names. |
+| G16 | @alias mentions and simple reactions. |
+| G17 | Read receipts are shown. |
+| G18 | English and Arabic (right-to-left) from the start. |
+| G19 | Lost or stolen device: nothing extra (the device can't be unlocked without the owner's biometric; the person is re-admitted on a new device, I7). |
+| G20 | Screenshots and copying can't be prevented; the app says so. |
+| D1 | iPhone app distributed through the App Store / TestFlight (Apple distributes; it never holds passwords or codes). |
+| D2 | Built with **Flutter**: one app for Mac, Windows, iPhone and Android, using each device's biometric check and security chip. |
+| D3 | Hosting: the owner's own computer (host mode) or any independent host they choose (G12). |
+
 ## 4. Architecture
 
 ```
-Laser Room installed app (Mac, Windows, iPhone, Android; one shared core)
+Laser Room installed app (Flutter: Mac, Windows, iPhone, Android; desktop can run host mode)
 ├─ Identity     device biometric check → app's own vault (security-chip key, this device only)
 │               → personal password + signing key per board; board passwords
 ├─ Board data   an append-only log of signed events (post, reply, edit, delete, invite, handover,
@@ -63,13 +91,13 @@ Laser Room installed app (Mac, Windows, iPhone, Android; one shared core)
 ├─ Sync         direct between members' browsers (WebRTC); an introduction service helps them
 │               find each other and relays when networks block direct links (sees only
 │               encrypted data; we provide one, anyone can run their own)
-└─ Cloud copy   optional encrypted copy in cloud storage (O2), so whoever opens the board next
-                gets the latest even when no one else is online
+└─ Host mode    the owner's computer introduces members, relays, keeps the encrypted copy and
+                stamps post times (W7, G5, G10); it can't read the board
 ```
 
 ## 5. Settled questions
 
 - **O1 → superseded:** no passkeys and no syncing through Apple or Google; the app holds its own secrets (I0, I1a).
-- **O2 → a:** the introduction service also keeps the encrypted cloud copy (W7).
+- **O2 → superseded by G12:** each owner hosts their own board (W7).
 - **O3:** Safari wipes browser storage after 7 days without a visit unless the app is installed to the home
   screen; the cloud copy (W7) and installing the app keep boards safe.

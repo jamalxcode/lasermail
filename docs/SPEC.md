@@ -86,11 +86,9 @@ Laser Room installed app (Flutter: Mac, Windows, iPhone, Android; desktop can ru
 │               clear) merged the same way on every device (CRDT), so copies always converge
 ├─ Encryption   a workspace key (shared with each invited member's key); every event and
 │               attachment encrypted before it leaves the device
-├─ Storage      the board and attachments on each member's device (browser storage, with an
-│               export so nothing depends on the browser keeping it)
-├─ Sync         direct between members' browsers (WebRTC); an introduction service helps them
-│               find each other and relays when networks block direct links (sees only
-│               encrypted data; we provide one, anyone can run their own)
+├─ Storage      boards and attachments in the app's own encrypted storage on each device
+├─ Sync         direct between members' devices when possible; through the owner's host otherwise
+│               (it relays only encrypted data)
 └─ Host mode    the owner's computer introduces members, relays, keeps the encrypted copy and
                 stamps post times (W7, G5, G10); it can't read the board
 ```
@@ -99,5 +97,4 @@ Laser Room installed app (Flutter: Mac, Windows, iPhone, Android; desktop can ru
 
 - **O1 → superseded:** no passkeys and no syncing through Apple or Google; the app holds its own secrets (I0, I1a).
 - **O2 → superseded by G12:** each owner hosts their own board (W7).
-- **O3:** Safari wipes browser storage after 7 days without a visit unless the app is installed to the home
-  screen; the cloud copy (W7) and installing the app keep boards safe.
+- **O3 → resolved:** Laser Room is an installed app, so browser storage limits don't apply.

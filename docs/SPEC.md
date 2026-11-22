@@ -8,6 +8,13 @@ and the number can't be turned back into the person. When the work is done, the 
 Status: **specification agreed, not built yet** (2026-11-22). It replaces the Laser Email and Laser Messenger
 plans (history in `DECISIONS.md`).
 
+## 0. Principle: a voluntary sharing board
+
+Laser Room helps a group put different ideas in front of everyone. **Every action is voluntary**: nobody is
+required to answer, vote, react or read anything, and the app never enforces, chases or penalises
+participation. If an owner wants something to be compulsory, that is between them and their people, inside
+their own organisation, not something the app enforces (owner, 2026-11-22).
+
 ## 1. Identity: a number from the device's biometric unlock
 
 | # | Rule |
@@ -44,7 +51,7 @@ plans (history in `DECISIONS.md`).
 | P1 | Each board is a **whiteboard canvas** (zoom and pan) holding **post-it notes** placed anywhere. Notes can be coloured, resized and grouped by placing them near each other (owner, 2026-11-22). |
 | P1a | **Connections:** any member can draw a line between two notes, like a mind map (optionally with a short label and an arrow). Connections are signed and timestamped like notes; only their author removes them. |
 | P1b | **👍 / 👎 on every note:** one per member per note, changeable; counts and who voted are shown (read receipts and votes are visible, G17). |
-| P1c | **Question cards:** when input is needed, a member posts a multiple-choice question (single or multiple answers, optional deadline). Each member answers once (changeable until closed); results show live; the author closes it, and a closed question is locked and signed. |
+| P1c | **Question cards:** when input would help, a member posts a multiple-choice question (single or multiple answers). Answering is **optional**; there are no required answers and no reminders. Each member can answer once (changeable until closed); results show live; the author closes it whenever they like (an optional "closes on" date is only shown, never enforced), and a closed question is locked and signed. |
 | P1d | **Replies:** each note has its own reply thread (one level). |
 | P2 | Every note, connection, vote, answer, reply, edit, move and deletion is **timestamped and signed** by the author's alias/ID number (owner: 6b). Signatures are checked by every member's app. |
 | P3 | Others see a note **only once it is submitted**; there's no live typing. |
@@ -52,11 +59,11 @@ plans (history in `DECISIONS.md`).
 | P5 | **Deleting:** only the author deletes their own note, connection or reply. The content is removed; a marker remains with the alias and time (owner: 7, 10). |
 | P6 | **Attachments on notes:** anything, with no size limit: links, images, PDFs, files, torrent files and magnet links (owner: 11, 14b, 2026-11-22). Images and PDFs preview on the note; links show their address (no automatic previews that would contact the site). |
 | P7 | **No tasks** (owner, 2026-11-22). |
-| P8 | **Decisions:** a note can be marked a Decision (proposer lists options, members vote or answer a question card, the proposer or owner closes it with the outcome); closed decisions are locked and signed, overturned only by a new decision that links to it; a **decision log** lists them all. |
+| P8 | **Outcomes:** a note can be marked an Outcome: a record of what the group arrived at (often after a question card or 👍/👎), closed by its author or the owner, locked and signed, and superseded only by a newer outcome that links to it. An **outcome log** lists them. It records, it doesn't bind: what an outcome means for people is up to the group. |
 | P9 | **Design review:** comments can be pinned to a spot on an image or PDF page; a new version of a file keeps earlier versions and their comments viewable. |
 | P10 | **Discussion quality:** a note's author or the owner can mark its thread **resolved** with a one-line conclusion; a **"since you were last here"** view shows what's new; unsent notes are kept as **drafts** on the device; **templates** (meeting agenda, design brief, decision record, kickoff) start common boards. |
-| P11 | **Clearing the table:** first the app produces a signed **close-out pack** (decision log, closed questions with results, final file versions, the board as an image) that members keep; then the board is cleared and the workspace can be reused, empty, with the same members. |
-| P12 | **Convenience:** joining by an invitation QR code or link carrying the board password (the newcomer scans, picks an alias, waits for the owner's tap); keyboard shortcuts and drag-and-drop of files onto the canvas; notifications by default only for mentions and question cards awaiting your answer, the rest in a daily digest. |
+| P11 | **Clearing the table:** first the app produces a signed **close-out pack** (outcome log, closed questions with results, final file versions, the board as an image) that members keep; then the board is cleared and the workspace can be reused, empty, with the same members. |
+| P12 | **Convenience:** joining by an invitation QR code or link carrying the board password (the newcomer scans, picks an alias, waits for the owner's tap); keyboard shortcuts and drag-and-drop of files onto the canvas; notifications by default only when someone @mentions you, the rest in an optional daily digest. No reminders, no "awaiting your answer", no overdue states. |
 
 ## 3a. Gap decisions (owner, 2026-11-22)
 
@@ -78,7 +85,7 @@ plans (history in `DECISIONS.md`).
 | G14 | A workspace can hold several boards (topics). |
 | G15 | Local search of posts and attachment names. |
 | G16 | @alias mentions and simple reactions. |
-| G17 | Read receipts are shown. |
+| G17 | Read receipts are shown (as information only; nobody is chased for not reading). |
 | G18 | English and Arabic (right-to-left) from the start. |
 | G19 | Lost or stolen device: nothing extra (the device can't be unlocked without the owner's biometric; the person is re-admitted on a new device, I7). |
 | G20 | Screenshots and copying can't be prevented; the app says so. |

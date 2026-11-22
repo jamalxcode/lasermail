@@ -84,8 +84,8 @@ Laser Room installed app (Flutter: Mac, Windows, iPhone, Android; desktop can ru
 │               → personal password + signing key per board; board passwords
 ├─ Board data   an append-only log of signed events (post, reply, edit, delete, invite, handover,
 │               clear) merged the same way on every device (CRDT), so copies always converge
-├─ Encryption   a workspace key (shared with each invited member's key); every event and
-│               attachment encrypted before it leaves the device
+├─ Encryption   board key derived from the board password; every event and attachment encrypted
+│               before it leaves the device; each event signed with the author's personal key
 ├─ Storage      boards and attachments in the app's own encrypted storage on each device
 ├─ Sync         direct between members' devices when possible; through the owner's host otherwise
 │               (it relays only encrypted data)
